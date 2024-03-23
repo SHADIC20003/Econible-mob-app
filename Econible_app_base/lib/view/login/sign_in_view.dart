@@ -17,7 +17,7 @@ class _SignInViewState extends State<SignInView> {
   TextEditingController txtEmail = TextEditingController();
   TextEditingController txtPassword = TextEditingController();
   bool isRemember = false;
-
+  bool _isVisible=false;
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.sizeOf(context);
@@ -32,22 +32,76 @@ class _SignInViewState extends State<SignInView> {
               Image.asset("assets/img/eco3.png",
                   width: media.width * 0.5, fit: BoxFit.contain),
               const Spacer(),
-              RoundTextField(
-                title: "Login",
-                controller: txtEmail,
-                keyboardType: TextInputType.emailAddress,
+               SizedBox(
+                height: 10,
+              ),
+               const SizedBox(
+                height: 45,
+               child: Text("please enter your email and password",style: TextStyle(color:Color.fromARGB(255, 188, 68, 2)),),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+            TextField(
+                
+                cursorColor: const Color.fromARGB(255, 188, 68, 2) ,
+                style: TextStyle(color: TColor.white, fontSize: 14),
+                decoration: InputDecoration(
+                 
+                  enabledBorder: const OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.grey, width: 0.0),
+                      ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color.fromARGB(255, 107, 104, 102))
+                  ),
+                  
+                  hintText:"Email Ex:ABC@example.com",
+                  hintStyle: const TextStyle(color:Color.fromARGB(255, 188, 68, 2)),
+                
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20,vertical: 20),
+                ),
+                
+               
               ),
               const SizedBox(
-                height: 15,
+
+                height: 45,
+              // child: Text("please enter the email in the correct form",style: TextStyle(color: _isEmailWritternCorrect ? Color.fromARGB(255, 188, 68, 2) : Colors.transparent,),),
               ),
-              RoundTextField(
-                title: "Password",
-                controller: txtPassword,
-                obscureText: true,
+              
+              TextField(
+                
+                cursorColor: const Color.fromARGB(255, 188, 68, 2) ,
+                style: TextStyle(color: TColor.white, fontSize: 14),
+                decoration: InputDecoration(
+                  suffixIcon: IconButton(
+                    onPressed: (){
+                      setState(() {
+                        _isVisible = !_isVisible;
+                      });
+                    }, 
+                    icon: _isVisible? const Icon(Icons.visibility,color: Color.fromARGB(255, 188, 68, 2),) : const Icon(Icons.visibility_off,color: Color.fromARGB(255, 188, 68, 2))
+                  ),
+                  
+                  enabledBorder: const OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.grey, width: 0.0),
+                      ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color.fromARGB(255, 107, 104, 102))
+                  ),
+                  hintText:"password Ex:********",
+                  hintStyle: const TextStyle(color:Color.fromARGB(255, 188, 68, 2)),
+                
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20,vertical: 20),
+                ),
+                
+                obscureText: !_isVisible,
               ),
 
                const SizedBox(
-                height: 8,
+                height: 20,
               ),
 
               Row(
@@ -67,7 +121,7 @@ class _SignInViewState extends State<SignInView> {
                               ? Icons.check_box_rounded
                               : Icons.check_box_outline_blank_rounded,
                           size: 25,
-                          color: TColor.gray50,
+                          color: Color.fromARGB(255, 188, 68, 2),
                         ),
                         const SizedBox(
                           width: 8,
