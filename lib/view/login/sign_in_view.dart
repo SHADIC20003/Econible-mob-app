@@ -1,144 +1,255 @@
 import 'package:flutter/material.dart';
-import 'package:trackizer/view/login/database_helper.dart';
-import 'package:trackizer/view/login/user.dart';
+import 'package:trackizer/sqldb.dart';
 import 'package:trackizer/view/login/sign_up_view.dart';
+import 'package:trackizer/view/login/social_login.dart';
+
+import '../../common/color_extension.dart';
+import '../../common_widget/primary_button.dart';
+import '../../common_widget/round_textfield.dart';
+import '../../common_widget/secondary_boutton.dart';
 
 class SignInView extends StatefulWidget {
-  const SignInView({Key? key}) : super(key: key);
+  const SignInView({super.key});
 
   @override
-  _SignInViewState createState() => _SignInViewState();
+  State<SignInView> createState() => _SignInViewState();
 }
 
 class _SignInViewState extends State<SignInView> {
   TextEditingController txtEmail = TextEditingController();
   TextEditingController txtPassword = TextEditingController();
+  bool isRemember = false;
+  bool _isVisible=false;
 
-  bool _isVisible = false;
-  bool _isPasswordEightCharacters = false;
-  bool _hasPasswordOneNumber = false;
-  bool _isEmailWrittenCorrect = true;
+  SqlDb sqldb = SqlDb();
 
-  void onPasswordChanged(String password) {
-    final numericRegex = RegExp(r'[0-9]');
-    setState(() {
-      _isPasswordEightCharacters = password.length >= 8;
-      _hasPasswordOneNumber = numericRegex.hasMatch(password);
-    });
+TextEditingController userEmail = TextEditingController();
+TextEditingController userPassword = TextEditingController();
+
+bool _isEmailWarn=false;
+bool _ispasswordWarn=false;
+//bool _isEmailCorrect = false;
+bool _isPasswordCorrect = false;
+
+/*checkEmail(textEmail,dbEmail){
+  _isEmailCorrect=false;
+
+  textEmail=textEmail.trim();
+  dbEmail =dbEmail.trim();
+
+  if(textEmail==dbEmail){
+    _isEmailCorrect=true;
   }
+}*/
 
-  void onEmailChanged(String email) {
-    _isEmailWrittenCorrect = RegExp(r'^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$')
-        .hasMatch(email);
-    setState(() {});
+checkPassword(textPassword,dbPassword){
+  _isPasswordCorrect=false;
+
+  if(textPassword==dbPassword){
+    _isPasswordCorrect=true;
   }
-
+}
   @override
   Widget build(BuildContext context) {
-    var media = MediaQuery.of(context).size;
-
+    var media = MediaQuery.sizeOf(context);
     return Scaffold(
-      body: Container(
-        color: Color.fromARGB(255, 35, 35, 35), // Your desired background color
-        child: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    "assets/img/eco3.png",
-                    width: media.width * 0.5,
-                    fit: BoxFit.contain,
-                  ),
-                  SizedBox(height: 20),
-                  // Text(
-                  //   'Sign In',
-                  //   style: TextStyle(
-                  //     color: Colors.white,
-                  //     fontSize: 24,
-                  //     fontWeight: FontWeight.bold,
-                  //   ),
-                  // ),
-                  SizedBox(height: 20),
-                  TextField(
-                    controller: txtEmail,
-                    onChanged: onEmailChanged,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      errorText:
-                          _isEmailWrittenCorrect ? null : 'Invalid email',
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  TextField(
-                    controller: txtPassword,
-                    onChanged: onPasswordChanged,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      errorText: _isPasswordEightCharacters
-                          ? (_hasPasswordOneNumber
-                              ? null
-                              : 'Password must contain at least one number')
-                          : 'Password must be at least 8 characters long',
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _isVisible = !_isVisible;
-                          });
-                        },
-                        icon: Icon(_isVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off),
+      backgroundColor: TColor.gray,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset("assets/img/eco3.png",
+                  width: media.width * 0.5, fit: BoxFit.contain),
+              const Spacer(),
+               SizedBox(
+                height: 10,
+              ),
+               const SizedBox(
+                height: 45,
+               child: Text("please enter your email and password",style: TextStyle(color:Color.fromARGB(255, 188, 68, 2)),),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+            TextField(
+                controller: userEmail,
+                cursorColor: const Color.fromARGB(255, 188, 68, 2) ,
+                style: TextStyle(color: TColor.white, fontSize: 14),
+                decoration: InputDecoration(
+                 
+                  enabledBorder: const OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.grey, width: 0.0),
                       ),
-                    ),
-                    obscureText: !_isVisible,
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color.fromARGB(255, 107, 104, 102))
                   ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final email = txtEmail.text.trim();
-                      final password = txtPassword.text.trim();
+                  
+                  hintText:"Email Ex:ABC@example.com",
+                  hintStyle: const TextStyle(color:Color.fromARGB(255, 188, 68, 2)),
+                
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20,vertical: 20),
+                ),
+                
+               
+              ),
+              if(_isEmailWarn==true)
+                 Text("wrong email address ",style: TextStyle(color:Color.fromARGB(255, 188, 68, 2)),),
+              const SizedBox(
 
-                      if (email.isNotEmpty && password.isNotEmpty) {
-                        final user = User(username: email, password: password);
-                        await DatabaseHelper.addUser(user);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content:
-                                  Text('User signed in successfully!')),
-                        );
-                        DatabaseHelper.printAllUsers();
-
-                        // Navigate to next screen or do something else
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Please fill in all fields')),
-                        );
-                      }
-                    },
-                    child: const Text('Sign In'),
+                height: 45,
+              // child: Text("please enter the email in the correct form",style: TextStyle(color: _isEmailWritternCorrect ? Color.fromARGB(255, 188, 68, 2) : Colors.transparent,),),
+              ),
+              
+              TextField(
+                controller: userPassword,
+                cursorColor: const Color.fromARGB(255, 188, 68, 2) ,
+                style: TextStyle(color: TColor.white, fontSize: 14),
+                decoration: InputDecoration(
+                  suffixIcon: IconButton(
+                    onPressed: (){
+                      setState(() {
+                        _isVisible = !_isVisible;
+                      });
+                    }, 
+                    icon: _isVisible? const Icon(Icons.visibility,color: Color.fromARGB(255, 188, 68, 2),) : const Icon(Icons.visibility_off,color: Color.fromARGB(255, 188, 68, 2))
                   ),
-                  SizedBox(height: 20),
+                  
+                  enabledBorder: const OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.grey, width: 0.0),
+                      ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color.fromARGB(255, 107, 104, 102))
+                  ),
+                  hintText:"password Ex:********",
+                  hintStyle: const TextStyle(color:Color.fromARGB(255, 188, 68, 2)),
+                
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20,vertical: 20),
+                ),
+                
+                obscureText: !_isVisible,
+              ),
+              if(_ispasswordWarn==true)
+                 Text("password is incorrect",style: TextStyle(color:Color.fromARGB(255, 188, 68, 2)),),
+
+               const SizedBox(
+                height: 20,
+              ),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
                   TextButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SignUpView(),
-                        ),
-                      );
+                      setState(() {
+                        isRemember = !isRemember;
+                      });
                     },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isRemember
+                              ? Icons.check_box_rounded
+                              : Icons.check_box_outline_blank_rounded,
+                          size: 25,
+                          color: Color.fromARGB(255, 188, 68, 2),
+                        ),
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        Text(
+                          "Remember me",
+                          style: TextStyle(color: TColor.gray50, fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {},
                     child: Text(
-                      'Don\'t have an account? Sign up',
-                      style: TextStyle(color: Colors.white),
+                      "Forgot password",
+                      style: TextStyle(color: TColor.gray50, fontSize: 14),
                     ),
                   ),
                 ],
               ),
-            ),
+
+              const SizedBox(
+                height: 8,
+              ),
+
+              PrimaryButton(
+                title: "Sign In",
+                onPressed: () async{
+                  
+              _ispasswordWarn=false;
+              _isEmailWarn=false;
+
+                  List data = await sqldb.readData("SELECT * FROM users WHERE email = '${userEmail.text.trim()}'");
+
+                 
+                  if (data.isNotEmpty){
+                    _isEmailWarn=false;
+                  //String dbEmail = data[0]['email'];
+                  String dbPassword = data[0]['password'];
+                  /*_isEmailCorrect=true;
+                  _isPasswordCorrect=false;*/
+                  checkPassword(userPassword.text, dbPassword);
+                        if(_isPasswordCorrect==true){
+                            Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                            builder: (context) => const SocialLoginView(),
+                                         ),
+                                          );
+                        }
+                        else{
+                          _ispasswordWarn=true;
+                        }
+
+                    
+                  }
+                  else{
+                    _isEmailWarn=true;
+                  }
+                  
+
+                 
+
+                  
+                   /*Navigator.push(
+                     context,
+                     MaterialPageRoute(
+                       builder: (context) => const SocialLoginView(),
+                     ),
+                   );*/
+                },
+              ),
+              const Spacer(),
+              Text(
+                "if you don't have an account yet?",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: TColor.white, fontSize: 14),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              SecondaryButton(
+                title: "Sign up",
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SignUpView(),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ),
