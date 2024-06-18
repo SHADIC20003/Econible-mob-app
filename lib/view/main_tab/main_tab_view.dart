@@ -3,10 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:trackizer/view/Expenses/add_expense.dart';
 
 import '../../common/color_extension.dart';
-import '../calender/calender_view.dart';
 import '../more_options/more.dart';
 import '../home/home_view.dart';
-import '../spending_budgets/spending_budgets_view.dart';
+import '../Insights_Page/spending_budgets_view.dart';
 
 import '../calender/chatgbt.dart';
 import 'package:trackizer/view/more_options/more.dart';
@@ -73,7 +72,7 @@ class _MainTabViewState extends State<MainTabView> {
                               onPressed: () {
                                 setState(() {
                                   selectTab = 1;
-                                  currentTabView = const SpendingBudgetsView();
+                                  currentTabView =  SpendingBudgetsView();
                                 });
                               },
                               icon: Image.asset(
@@ -93,7 +92,7 @@ class _MainTabViewState extends State<MainTabView> {
                               onPressed: () {
                                 setState(() {
                                   selectTab = 2;
-                                  currentTabView =  const ChatPage();
+                                  currentTabView =   ChatPage();
                                 });
                               },
                               icon: Image.asset(

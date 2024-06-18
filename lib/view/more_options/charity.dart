@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart'; // Import url_launcher
+import 'package:trackizer/common/color_extension.dart';
 
 class CharityOrganizationsPage extends StatelessWidget {
   const CharityOrganizationsPage({Key? key}) : super(key: key);
@@ -7,6 +8,7 @@ class CharityOrganizationsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: TColor.gray70,
       appBar: AppBar(
         title: Text('Charity Organizations'),
         backgroundColor: Colors.black,

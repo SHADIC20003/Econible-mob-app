@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:trackizer/view/more_options/charity.dart';
 import 'package:trackizer/view/more_options/education.dart'; // Import the FinanceEducationPage
+import 'package:trackizer/common/color_extension.dart';
 
 class MoreOptionsPage extends StatelessWidget {
   const MoreOptionsPage({Key? key}) : super(key: key);
@@ -8,6 +9,7 @@ class MoreOptionsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+            backgroundColor: TColor.gray70,
       appBar: AppBar(
         title: Text('More Options'),
         backgroundColor: Colors.black,
