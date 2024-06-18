@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart'; // Import url_launcher
+import 'package:trackizer/common/color_extension.dart';
 
 
 class FinanceEducationPage extends StatelessWidget {
@@ -8,15 +9,16 @@ class FinanceEducationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: TColor.gray50,
       appBar: AppBar(
-        title: Text('Finance Education'),
+        title: Text('Finance Education') , backgroundColor: TColor.gray80,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildSectionTitle('Personal Finance Basics'),
+            _buildSectionTitle('Personal Finance Basics'), 
             _buildResourceTile(
               title: 'Investopedia - Personal Finance Basics',
               description:

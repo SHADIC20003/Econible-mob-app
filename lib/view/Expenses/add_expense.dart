@@ -19,24 +19,16 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
   TextEditingController dateController = TextEditingController();
 
   List subArr = [
-    {"name": "Renting Expenses", "icon": "assets/img/rent.png"},
-    {"name": "Loans", "icon": "assets/img/loans1.png"},
-    {"name": "Electricity", "icon": "assets/img/electricity.png"},
-    {"name": "Water", "icon": "assets/img/water.png"},
-    {"name": "Gas", "icon": "assets/img/gas.png"},
-    {"name": "Insurance", "icon": "assets/img/insurance.png"},
-    {"name": "Internet Access", "icon": "assets/img/wifi.png"},
+    {"name": "Mortgage or Rent", "icon": "assets/img/rent.png"},
     {"name": "Food", "icon": "assets/img/food.png"},
-    {"name": "Vehicle", "icon": "assets/img/car.png"},
     {"name": "Transportation", "icon": "assets/img/transport.png"},
-    {"name": "Medical", "icon": "assets/img/medical.png"},
-    {"name": "Education", "icon": "assets/img/education.png"},
-    {"name": "Entertainment", "icon": "assets/img/entertainment1.png"},
-    {"name": "Clothes", "icon": "assets/img/clothes.png"},
-    {"name": "Savings", "icon": "assets/img/savings.png"},
-    {"name": "Software Subscriptions", "icon": "assets/img/subs.png"},
-    {"name": "Travels & Trips", "icon": "assets/img/trip.png"},
-    {"name": "Others", "icon": "assets/img/more.png"},
+    {"name": "Utilities", "icon": "assets/img/electricity.png"},
+    {"name": "Subscriptions", "icon": "assets/img/subs.png"},
+    {"name": "Personal Expenses", "icon": "assets/img/clothes.png"},
+    {"name": "Savings & Investments", "icon": "assets/img/savings.png"},
+    {"name": "Debts or Loans", "icon": "assets/img/loans1.png"},
+    {"name": "Health care", "icon": "assets/img/insurance.png"},
+    {"name": "Miscellaneous expenses", "icon": "assets/img/more.png"},
   ];
 
   double amountVal = 5;
@@ -179,9 +171,9 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
     // Wrap the TextFormField with a Theme widget
     data: ThemeData(
       // Customize the text theme to set the color of the selected date text
-      textTheme: TextTheme(
-        subtitle1: TextStyle(color: Colors.white), // Customize the color
-      ),
+      // textTheme: TextTheme(
+      //   subtitle1: TextStyle(color: Colors.white), // Customize the color
+      // ),
     ),
     child: TextFormField(
       controller: dateController,
