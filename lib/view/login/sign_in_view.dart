@@ -46,7 +46,7 @@ class _SignInViewState extends State<SignInView> {
       backgroundColor: TColor.gray,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 50),
+          padding: const EdgeInsets.symmetric(vertical: 45, horizontal: 30),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
