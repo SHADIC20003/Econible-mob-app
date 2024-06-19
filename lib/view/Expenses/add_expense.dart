@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:trackizer/common/color_extension.dart';
 import 'package:trackizer/common_widget/image_button.dart';
 import 'package:trackizer/common_widget/primary_button.dart';
-import 'package:trackizer/common_widget/round_textfield.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:trackizer/common_widget/round_textfield.dart';
+import 'package:trackizer/common/color_extension.dart';
 
 class AddSubScriptionView extends StatefulWidget {
   const AddSubScriptionView({Key? key}) : super(key: key);
@@ -32,8 +32,8 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
   ];
 
   double amountVal = 5;
-
   DateTime selectedDate = DateTime.now();
+  int selectedCategoryIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -74,18 +74,6 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
                             )
                           ],
                         ),
-                        // Row(
-                        //   mainAxisAlignment: MainAxisAlignment.center,
-                        //   children: [
-                        //     Text(
-                        //       "New",
-                        //       style: TextStyle(
-                        //         color: TColor.gray30,
-                        //         fontSize: 16,
-                        //       ),
-                        //     )
-                        //   ],
-                        // ),
                       ],
                     ),
                     Padding(
@@ -111,19 +99,28 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
                           enableInfiniteScroll: true,
                           viewportFraction: 0.65,
                           enlargeFactor: 0.4,
-                          enlargeStrategy:
-                              CenterPageEnlargeStrategy.zoom,
+                          enlargeStrategy: CenterPageEnlargeStrategy.zoom,
+                          onPageChanged: (index, reason) {
+                            setState(() {
+                              selectedCategoryIndex = index;
+                            });
+                          },
                         ),
                         itemCount: subArr.length,
-                        itemBuilder: (BuildContext context,
-                            int itemIndex, int pageViewIndex) {
+                        itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
                           var sObj = subArr[itemIndex] as Map? ?? {};
 
                           return Container(
                             margin: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: itemIndex == selectedCategoryIndex ? Colors.blue : Colors.transparent,
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                             child: Column(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Image.asset(
                                   sObj["icon"],
@@ -163,56 +160,54 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
               ),
             ),
             // Date Picker
-           Padding(
-  padding: const EdgeInsets.symmetric(
-    horizontal: 20,
-  ),
-  child: Theme(
-    // Wrap the TextFormField with a Theme widget
-    data: ThemeData(
-      // Customize the text theme to set the color of the selected date text
-      // textTheme: TextTheme(
-      //   subtitle1: TextStyle(color: Colors.white), // Customize the color
-      // ),
-    ),
-    child: TextFormField(
-      controller: dateController,
-      textAlignVertical: TextAlignVertical.center,
-      readOnly: true,
-      onTap: () async {
-        final DateTime? pickedDate = await showDatePicker(
-          context: context,
-          initialDate: selectedDate,
-          firstDate: DateTime(2015, 8),
-          lastDate: DateTime(2101),
-        );
-        if (pickedDate != null && pickedDate != selectedDate) {
-          setState(() {
-            selectedDate = pickedDate;
-            dateController.text =
-                DateFormat('dd/MM/yyyy').format(selectedDate);
-          });
-        }
-      },
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: TColor.gray.withOpacity(0),
-        prefixIcon: const Icon(
-          Icons.calendar_today,
-          size: 16,
-          color: Colors.white,
-        ),
-        hintText: 'Date',
-        hintStyle: TextStyle(color: Colors.white),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-      ),
-    ),
-  ),
-),
-
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+              ),
+              child: Theme(
+                // Wrap the TextFormField with a Theme widget
+                data: ThemeData(
+                  // Customize the text theme to set the color of the selected date text
+                  // textTheme: TextTheme(
+                  //   subtitle1: TextStyle(color: Colors.white), // Customize the color
+                  // ),
+                ),
+                child: TextFormField(
+                  controller: dateController,
+                  textAlignVertical: TextAlignVertical.center,
+                  readOnly: true,
+                  onTap: () async {
+                    final DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate,
+                      firstDate: DateTime(2015, 8),
+                      lastDate: DateTime(2101),
+                    );
+                    if (pickedDate != null && pickedDate != selectedDate) {
+                      setState(() {
+                        selectedDate = pickedDate;
+                        dateController.text = DateFormat('dd/MM/yyyy').format(selectedDate);
+                      });
+                    }
+                  },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: TColor.white.withOpacity(0),
+                    prefixIcon: const Icon(
+                      Icons.calendar_today,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                    hintText: 'Date',
+                    hintStyle: TextStyle(color: Colors.white),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(
                 vertical: 0,
@@ -231,6 +226,14 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
                     vertical: 10,
                     horizontal: 20,
                   ),
+                  child: Text(
+                    "Amount: E£${amountVal.toStringAsFixed(2)}",
+                    style: TextStyle(
+                      color: TColor.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -240,8 +243,7 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
                 horizontal: 20,
               ),
               child: Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ImageButton(
                     image: "assets/img/minus.png",
@@ -285,7 +287,7 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
                   ImageButton(
                     image: "assets/img/plus.png",
                     onPressed: () {
-                      amountVal +=5;
+                      amountVal += 5;
 
                       setState(() {});
                     },
@@ -299,7 +301,7 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
               ),
               child: PrimaryButton(
                 title: "Add Expense",
-                onPressed: () {},
+                onPressed: _saveExpense,
               ),
             ),
             const SizedBox(
@@ -345,7 +347,7 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
                 ),
               ),
             ),
-             const SizedBox(
+            const SizedBox(
               height: 40,
             ),
           ],
@@ -409,5 +411,26 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
         );
       },
     );
+  }
+
+  void _saveExpense() {
+    var selectedCategory = subArr[selectedCategoryIndex];
+    var description = txtDescription.text;
+    var date = dateController.text;
+    var amount = amountVal;
+
+    // Prepared Data for the API call (Ahmed alaa)
+    var expenseData = {
+      "category": selectedCategory["name"],
+      "description": description,
+      "date": date,
+      "amount": amount,
+    };
+
+    // call  API to save the expense
+    // apiService.saveExpense(expenseData);
+
+    // Print
+    print(expenseData);
   }
 }
