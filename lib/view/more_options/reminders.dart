@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'package:trackizer/common/color_extension.dart';
 
 class RemindersPage extends StatefulWidget {
@@ -10,19 +12,69 @@ class RemindersPage extends StatefulWidget {
 class _RemindersPageState extends State<RemindersPage> {
   final _expenseDateController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  String _expenseName = '';
-  String _expenseDate = '';
-  String _expenseAmount = '';
-  DateTime? _selectedDate;
-
+  final _expenseNameController = TextEditingController();
+  final _expenseAmountController = TextEditingController();
   List<Map<String, String>> _reminders = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReminders();
+  }
+
+  @override
+  void dispose() {
+    _expenseDateController.dispose();
+    _expenseNameController.dispose();
+    _expenseAmountController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadReminders() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? remindersString = prefs.getString('reminders');
+    if (remindersString != null) {
+      setState(() {
+        _reminders = List<Map<String, String>>.from(json.decode(remindersString));
+      });
+    }
+  }
+
+  Future<void> _saveReminders() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('reminders', json.encode(_reminders));
+  }
+
+  Future<void> _addReminder() async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      setState(() {
+        _reminders.add({
+          'name': _expenseNameController.text,
+          'date': _expenseDateController.text,
+          'amount': _expenseAmountController.text,
+        });
+        _expenseNameController.clear();
+        _expenseDateController.clear();
+        _expenseAmountController.clear();
+      });
+      await _saveReminders();
+    }
+  }
+
+  Future<void> _deleteReminder(int index) async {
+    setState(() {
+      _reminders.removeAt(index);
+    });
+    await _saveReminders();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Reminders', style: TextStyle(color: Colors.white)),
-        backgroundColor: TColor.gray70,
+        backgroundColor: Color.fromARGB(80, 80, 80, 75),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -35,6 +87,7 @@ class _RemindersPageState extends State<RemindersPage> {
             child: ListView(
               children: [
                 TextFormField(
+                  controller: _expenseNameController,
                   style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: 'Expense Name',
@@ -50,11 +103,11 @@ class _RemindersPageState extends State<RemindersPage> {
                     }
                     return null;
                   },
-                  onSaved: (value) => _expenseName = value!,
                 ),
                 SizedBox(height: 20),
                 TextFormField(
                   readOnly: true,
+                  controller: _expenseDateController,
                   style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: 'Expense Date',
@@ -64,7 +117,6 @@ class _RemindersPageState extends State<RemindersPage> {
                       borderSide: BorderSide(color: Colors.grey.shade800),
                     ),
                   ),
-                  controller: _expenseDateController,
                   onTap: () async {
                     final DateTime? picked = await showDatePicker(
                       context: context,
@@ -74,9 +126,7 @@ class _RemindersPageState extends State<RemindersPage> {
                     );
                     if (picked != null) {
                       setState(() {
-                        _selectedDate = picked;
-                        _expenseDate = DateFormat('yyyy-MM-dd').format(picked);
-                        _expenseDateController.text = _expenseDate;
+                        _expenseDateController.text = DateFormat('yyyy-MM-dd').format(picked);
                       });
                     }
                   },
@@ -86,10 +136,10 @@ class _RemindersPageState extends State<RemindersPage> {
                     }
                     return null;
                   },
-                  onSaved: (value) => _expenseDate = value!,
                 ),
                 SizedBox(height: 20),
                 TextFormField(
+                  controller: _expenseAmountController,
                   style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: 'Expense Amount',
@@ -105,24 +155,10 @@ class _RemindersPageState extends State<RemindersPage> {
                     }
                     return null;
                   },
-                  onSaved: (value) => _expenseAmount = value!,
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _formKey.currentState!.save();
-                      setState(() {
-                        _reminders.add({
-                          'name': _expenseName,
-                          'date': _expenseDate,
-                          'amount': _expenseAmount,
-                        });
-                      });
-                      _expenseDateController.clear();
-                      _formKey.currentState!.reset();
-                    }
-                  },
+                  onPressed: _addReminder,
                   child: Text('Add Reminder', style: TextStyle(fontSize: 18, color: Colors.white)),
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(Colors.blueAccent),
@@ -155,11 +191,7 @@ class _RemindersPageState extends State<RemindersPage> {
                           ),
                           trailing: IconButton(
                             icon: Icon(Icons.delete, color: Colors.redAccent),
-                            onPressed: () {
-                              setState(() {
-                                _reminders.removeAt(index);
-                              });
-                            },
+                            onPressed: () => _deleteReminder(index),
                           ),
                         ),
                       );
@@ -173,4 +205,12 @@ class _RemindersPageState extends State<RemindersPage> {
       ),
     );
   }
+}
+
+class TColor {
+  static const gray = Color(0xFF212121);
+  static const gray70 = Color(0xFF333333);
+  static const gray30 = Color(0xFF8F8F8F);
+  static const gray60 = Color(0xFF646464);
+  static const white = Color(0xFFFFFFFF);
 }

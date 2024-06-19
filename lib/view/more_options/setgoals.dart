@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:trackizer/common/color_extension.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class SetGoalsPage extends StatefulWidget {
   @override
@@ -13,15 +14,61 @@ class _SetGoalsPageState extends State<SetGoalsPage> {
   List<Map<String, dynamic>> _goals = [];
 
   @override
+  void initState() {
+    super.initState();
+    _loadGoals();
+  }
+
+  @override
   void dispose() {
     _goalNameController.dispose();
     _goalDescriptionController.dispose();
     super.dispose();
   }
 
-  Future<void> _saveGoal() async {
-    // Make API call to save goal data
-    // ...
+  Future<void> _loadGoals() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? goalsString = prefs.getString('goals');
+    if (goalsString != null) {
+      setState(() {
+        _goals = List<Map<String, dynamic>>.from(json.decode(goalsString));
+      });
+    }
+  }
+
+  Future<void> _saveGoals() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('goals', json.encode(_goals));
+  }
+
+  Future<void> _addGoal() async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      setState(() {
+        _goals.add({
+          'name': _goalNameController.text,
+          'description': _goalDescriptionController.text,
+          'achieved': false,
+        });
+        _goalNameController.clear();
+        _goalDescriptionController.clear();
+      });
+      await _saveGoals();
+    }
+  }
+
+  Future<void> _deleteGoal(int index) async {
+    setState(() {
+      _goals.removeAt(index);
+    });
+    await _saveGoals();
+  }
+
+  Future<void> _toggleAchieved(int index) async {
+    setState(() {
+      _goals[index]['achieved'] = !_goals[index]['achieved'];
+    });
+    await _saveGoals();
   }
 
   @override
@@ -29,7 +76,7 @@ class _SetGoalsPageState extends State<SetGoalsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Set Goals', style: TextStyle(color: Colors.white)),
-        backgroundColor: TColor.gray,
+            backgroundColor: Color.fromARGB(80, 80, 80, 75),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -58,7 +105,6 @@ class _SetGoalsPageState extends State<SetGoalsPage> {
                     return null;
                   },
                   controller: _goalNameController,
-                  onSaved: (value) => _goalNameController.text = value!,
                 ),
                 SizedBox(height: 20),
                 TextFormField(
@@ -79,25 +125,10 @@ class _SetGoalsPageState extends State<SetGoalsPage> {
                     return null;
                   },
                   controller: _goalDescriptionController,
-                  onSaved: (value) => _goalDescriptionController.text = value!,
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      _formKey.currentState!.save();
-                      setState(() {
-                        _goals.add({
-                          'name': _goalNameController.text,
-                          'description': _goalDescriptionController.text,
-                          'achieved': false,
-                        });
-                      });
-                      _goalNameController.clear();
-                      _goalDescriptionController.clear();
-                      await _saveGoal();
-                    }
-                  },
+                  onPressed: _addGoal,
                   child: Text('Set Goal', style: TextStyle(fontSize: 18, color: Colors.white)),
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(Colors.blueAccent),
@@ -138,9 +169,7 @@ class _SetGoalsPageState extends State<SetGoalsPage> {
                                   Checkbox(
                                     value: goal['achieved'],
                                     onChanged: (value) {
-                                      setState(() {
-                                        goal['achieved'] = value!;
-                                      });
+                                      _toggleAchieved(index);
                                     },
                                     activeColor: Colors.blueAccent,
                                   ),
@@ -151,9 +180,7 @@ class _SetGoalsPageState extends State<SetGoalsPage> {
                           trailing: IconButton(
                             icon: Icon(Icons.delete, color: Colors.redAccent),
                             onPressed: () {
-                              setState(() {
-                                _goals.removeAt(index);
-                              });
+                              _deleteGoal(index);
                             },
                           ),
                         ),
@@ -168,4 +195,12 @@ class _SetGoalsPageState extends State<SetGoalsPage> {
       ),
     );
   }
+}
+
+class TColor {
+  static const gray = Color(0xFF212121);
+  static const gray70 = Color(0xFF333333);
+  static const gray30 = Color(0xFF8F8F8F);
+  static const gray60 = Color(0xFF646464);
+  static const white = Color(0xFFFFFFFF);
 }

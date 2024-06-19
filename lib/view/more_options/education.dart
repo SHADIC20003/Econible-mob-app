@@ -9,7 +9,7 @@ class FinanceEducationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: TColor.gray50,
+            backgroundColor: Color.fromARGB(80, 80, 80, 75),
       appBar: AppBar(
         title: Text('Finance Education') , backgroundColor: TColor.gray80,
       ),
@@ -18,7 +18,7 @@ class FinanceEducationPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildSectionTitle('Personal Finance Basics'), 
+            _buildSectionTitle('Personal Finance Basics'),
             _buildResourceTile(
               title: 'Investopedia - Personal Finance Basics',
               description:
@@ -80,36 +80,47 @@ class FinanceEducationPage extends StatelessWidget {
   }
 
   Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(
+  return Padding(
+    padding: EdgeInsets.symmetric(vertical: 8.0),
+    child: Text(
+      title,
+      style: TextStyle(
+        fontSize: 18.0,
+        fontWeight: FontWeight.bold,
+        color: Colors.white54, // Add this line
+      ),
+    ),
+  );
+}
+
+Widget _buildResourceTile({
+  required String title,
+  required String description,
+  required String url,
+}) {
+  return Card(
+    elevation: 2.0,
+    margin: EdgeInsets.symmetric(vertical: 8.0),
+    color: TColor.gray80, 
+    child: ListTile(
+      title: Text(
         title,
         style: TextStyle(
-          fontSize: 18.0,
-          fontWeight: FontWeight.bold,
+          color: Colors.white70, 
         ),
       ),
-    );
-  }
-
-  Widget _buildResourceTile({
-    required String title,
-    required String description,
-    required String url,
-  }) {
-    return Card(
-      elevation: 2.0,
-      margin: EdgeInsets.symmetric(vertical: 8.0),
-      child: ListTile(
-        title: Text(title),
-        subtitle: Text(description),
-        onTap: () {
-          _launchURL(url);
-        },
+      subtitle: Text(
+        description,
+        style: TextStyle(
+          color: Colors.white70, 
+        ),
       ),
-    );
-  }
-
+      onTap: () {
+        _launchURL(url);
+      },
+    ),
+  );
+}
   Future<void> _launchURL(String url) async {
     if (await canLaunch(url)) {
       await launch(url);

@@ -7,7 +7,7 @@ import '../more_options/more.dart';
 import '../home/home_view.dart';
 import '../Insights_Page/spending_budgets_view.dart';
 
-import '../calender/chatgbt.dart';
+import '../Chatbot/chatgbt.dart';
 import 'package:trackizer/view/more_options/more.dart';
 
 class MainTabView extends StatefulWidget {

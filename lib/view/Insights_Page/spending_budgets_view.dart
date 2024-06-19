@@ -47,7 +47,7 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: TColor.gray80,
+            backgroundColor: Color.fromARGB(80, 80, 80, 75),
       appBar: AppBar(
         title: Text('Insights Page') , backgroundColor: TColor.gray80,
         actions: [

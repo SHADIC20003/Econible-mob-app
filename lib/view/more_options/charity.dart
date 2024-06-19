@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:url_launcher/url_launcher.dart'; // Import url_launcher
 import 'package:trackizer/common/color_extension.dart';
 
@@ -8,7 +9,7 @@ class CharityOrganizationsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: TColor.gray70,
+            backgroundColor: Color.fromARGB(80, 80, 80, 75),
       appBar: AppBar(
         title: Text('Charity Organizations'),
         backgroundColor: Colors.black,
@@ -77,14 +78,19 @@ class CharityOrganizationsPage extends StatelessWidget {
   }
 
   Widget _buildCharityLink({required String title, required String url, required IconData icon}) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      onTap: () {
-        _launchURL(url); // Call _launchURL when the ListTile is tapped
-      },
-    );
-  }
+  return ListTile(
+    leading: Icon(icon),
+    title: Text(
+      title,
+      style: TextStyle(
+        color: Colors.white60, // Adjust the text color to white
+      ),
+    ),
+    onTap: () {
+      _launchURL(url); // Call _launchURL when the ListTile is tapped
+    },
+  );
+}
 
   // Function to launch URL
   Future<void> _launchURL(String url) async {

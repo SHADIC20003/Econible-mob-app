@@ -11,7 +11,7 @@ class MoreOptionsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-            backgroundColor: TColor.gray70,
+            backgroundColor: Color.fromARGB(80, 80, 80, 75),
       appBar: AppBar(
         title: Text('More Options'),
         backgroundColor: Colors.black,
