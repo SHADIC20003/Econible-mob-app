@@ -178,7 +178,7 @@ class _SignInViewState extends State<SignInView> {
 
                     if (_isPasswordCorrect) {
                       final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-                      sharedPreferences.setString('current_email', userEmail.text); 
+                      sharedPreferences.setString('current_email', userEmail.text.trim()); 
                       Navigator.push(
                         context,
                         MaterialPageRoute(

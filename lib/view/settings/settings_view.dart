@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trackizer/sqldb.dart';
 import '../../common/color_extension.dart';
 import '../../common_widget/icon_item_row.dart';
-import '../../view/login/sign_in_view.dart'; // Import SignInView
+import '../../view/login/sign_in_view.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({Key? key}) : super(key: key);
@@ -13,6 +14,60 @@ class SettingsView extends StatefulWidget {
 
 class _SettingsViewState extends State<SettingsView> {
   bool isActive = false;
+  SqlDb sqldb = SqlDb();
+  String? email = '';
+  String dbEmail = '';
+  String dbUsername = '';
+
+  @override
+  void initState() {
+    super.initState();
+    getData(); // Call the getData function here to initially load the data
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    getData(); // Call getData here to refresh data when dependencies change
+  }
+
+  void getData() async {
+    final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    email = sharedPreferences.getString('current_email');
+
+    // Log email to debug
+    print('Fetched email from SharedPreferences: $email');
+
+    if (email != null && email!.isNotEmpty) {
+      // Properly escape the email value to avoid SQL injection
+      String escapedEmail = email!.replaceAll("'", "''");
+
+      // Log the SQL query to debug
+      print('SQL query: SELECT * FROM users WHERE email = \'$escapedEmail\'');
+
+      List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM users WHERE email = '$escapedEmail' ");
+
+      // Log the data fetched from the database
+      print('Data fetched from the database: $data');
+
+      if (data.isNotEmpty) {
+        setState(() {
+          dbEmail = data[0]['email'];
+          dbUsername = data[0]['userName'];
+        });
+      } else {
+        setState(() {
+          dbEmail = 'User not found';
+          dbUsername = 'Unknown';
+        });
+      }
+    } else {
+      setState(() {
+        dbEmail = 'No email found';
+        dbUsername = 'Unknown';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +123,7 @@ class _SettingsViewState extends State<SettingsView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Guest",
+                    dbUsername,
                     style: TextStyle(
                         color: TColor.white,
                         fontSize: 20,
@@ -83,7 +138,7 @@ class _SettingsViewState extends State<SettingsView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "guest@gmail.com",
+                    dbEmail,
                     style: TextStyle(
                         color: TColor.gray30,
                         fontSize: 12,
