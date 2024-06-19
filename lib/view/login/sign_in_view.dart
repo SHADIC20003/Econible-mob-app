@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trackizer/sqldb.dart';
 import 'package:trackizer/view/home/home_view.dart';
 import 'package:trackizer/view/login/sign_up_view.dart';
@@ -176,6 +177,8 @@ class _SignInViewState extends State<SignInView> {
                     checkPassword(userPassword.text, dbPassword);
 
                     if (_isPasswordCorrect) {
+                      final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+                      sharedPreferences.setString('current_email', userEmail.text); 
                       Navigator.push(
                         context,
                         MaterialPageRoute(

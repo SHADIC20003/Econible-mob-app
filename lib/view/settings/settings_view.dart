@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../common/color_extension.dart';
 import '../../common_widget/icon_item_row.dart';
 import '../../view/login/sign_in_view.dart'; // Import SignInView
@@ -258,7 +259,9 @@ class _SettingsViewState extends State<SettingsView> {
                       child: Column(
                         children: [
                           OutlinedButton(
-                            onPressed: () {
+                            onPressed: () async {
+                              final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+                              sharedPreferences.remove('current_email');
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
