@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
 
+
 class SpendingBudgetsView extends StatefulWidget {
   @override
   _SpendingBudgetsViewState createState() => _SpendingBudgetsViewState();
@@ -65,68 +66,83 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
     );
   }
 
-  Widget _buildPieChartPage() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+   Widget _buildPieChartPage() {
+    return Stack(
       children: [
-        AspectRatio(
-          aspectRatio: 1,
-          child: PieChart(
-            PieChartData(
-              sections: List.generate(
+        // Upper background layer
+        Container(
+    height: 300, // adjust the height as needed
+decoration: BoxDecoration(
+  gradient: LinearGradient(
+    colors: [Colors.blueGrey[800]!, Colors.grey[900]!],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  ),
+),
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AspectRatio(
+              aspectRatio: 1,
+              child: PieChart(
+                PieChartData(
+                  sections: List.generate(
+                    budgetCategories.length,
+                    (index) {
+                      final category = budgetCategories[index];
+                      return PieChartSectionData(
+                        value: category['percentage'],
+                        title: '${category['percentage'].toStringAsFixed(0)}%',
+                        color: _categoryColors[index],
+                        radius: 100,
+                        titleStyle: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        badgeWidget: _buildBadge(category['name']),
+                        badgePositionPercentageOffset: 0.95,
+                      );
+                    },
+                  ),
+                  sectionsSpace: 0,
+                  centerSpaceRadius: 50,
+                  borderData: FlBorderData(show: false),
+                  pieTouchData: PieTouchData(enabled: true),
+                ),
+              ),
+            ),
+            SizedBox(height: 120),
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: List.generate(
                 budgetCategories.length,
                 (index) {
                   final category = budgetCategories[index];
-                  return PieChartSectionData(
-                    value: category['percentage'],
-                    title: '${category['percentage'].toStringAsFixed(0)}%',
-                    color: _categoryColors[index],
-                    radius: 100,
-                    titleStyle: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    badgeWidget: _buildBadge(category['name']),
-                    badgePositionPercentageOffset: 0.95,
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _categoryColors[index],
+                        ),
+                      ),
+                      SizedBox(width: 8.0),
+                      Text(
+                        category['name'],
+                        style: TextStyle(fontSize: 14, color: Colors.white),
+                      ),
+                    ],
                   );
                 },
               ),
-              sectionsSpace: 0,
-              centerSpaceRadius: 50,
-              borderData: FlBorderData(show: false),
-              pieTouchData: PieTouchData(enabled: true),
             ),
-          ),
-        ),
-        SizedBox(height: 100),
-        Wrap(
-          spacing: 8.0,
-          runSpacing: 8.0,
-          children: List.generate(
-            budgetCategories.length,
-            (index) {
-              final category = budgetCategories[index];
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _categoryColors[index],
-                    ),
-                  ),
-                  SizedBox(width: 8.0),
-                  Text(
-                    category['name'],
-                    style: TextStyle(fontSize: 14, color: Colors.white),
-                  ),
-                ],
-              );
-            },
-          ),
+          ],
         ),
       ],
     );
