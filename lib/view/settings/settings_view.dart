@@ -36,19 +36,19 @@ class _SettingsViewState extends State<SettingsView> {
     email = sharedPreferences.getString('current_email');
 
     // Log email to debug
-    print('Fetched email from SharedPreferences: $email');
+    //print('Fetched email from SharedPreferences: $email');
 
     if (email != null && email!.isNotEmpty) {
       // Properly escape the email value to avoid SQL injection
       String escapedEmail = email!.replaceAll("'", "''");
 
       // Log the SQL query to debug
-      print('SQL query: SELECT * FROM users WHERE email = \'$escapedEmail\'');
+      //print('SQL query: SELECT * FROM users WHERE email = \'$escapedEmail\'');
 
       List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM users WHERE email = '$escapedEmail' ");
 
       // Log the data fetched from the database
-      print('Data fetched from the database: $data');
+      //print('Data fetched from the database: $data');
 
       if (data.isNotEmpty) {
         setState(() {

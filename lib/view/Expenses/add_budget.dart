@@ -127,30 +127,27 @@ class _AddBudgetPageState extends State<AddBudgetPage> {
                   email = sharedPreferences.getString('current_email');
 
                     // Log email to debug
-                print('Fetched email from SharedPreferences: $email');
+                //print('Fetched email from SharedPreferences: $email');
 
               if (email != null && email!.isNotEmpty) {
                   int response = await sqldb.insertData(
                         "UPDATE 'users' SET 'budget' = ${_budgetController.text.trim()} WHERE email = '$email'",
                       );
                       print(response);
-                      if (response > 0) {
+                      
                         email = sharedPreferences.getString('current_email');
                         print('$email');
                         List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM users WHERE email = '$email' ");
 
       // Log the data fetched from the database
-      print('Data fetched from the database: $data');
+      //print('Data fetched from the database: $data');
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const MainTabView(),
                           ),
                         );
-                      }
-                      else{
-                        print("couldnt insert the budget into users accout");
-                      }
+                     
                     }else {
                       print("email not found in shared preferences");
                     }

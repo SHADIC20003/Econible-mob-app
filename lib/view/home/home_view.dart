@@ -81,12 +81,12 @@ String dbbudget = '';
       String escapedEmail = email!.replaceAll("'", "''");
 
       // Log the SQL query to debug
-      print('SQL query: SELECT * FROM users WHERE email = \'$escapedEmail\'');
+      //print('SQL query: SELECT * FROM users WHERE email = \'$escapedEmail\'');
 
       List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM users WHERE email = '$email' ");
 
       // Log the data fetched from the database
-      print('Data fetched from the database: $data');
+      //print('Data fetched from the database: $data');
 
       if (data.isNotEmpty) {
         setState(() {
