@@ -75,7 +75,7 @@ class _SignUpViewState extends State<SignUpView> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(
-                  height: 20, // Adjusted spacing above the logo
+                  height: 30, // Adjusted spacing above the logo
                 ),
                 Image.asset(
                   "assets/img/eco3.png",
@@ -85,11 +85,16 @@ class _SignUpViewState extends State<SignUpView> {
                 SizedBox(
                   height: 30, // Spacing between logo and text
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 45,
                   child: Text(
-                    "Please enter your email, name and password.",
-                    style: TextStyle(color: Color.fromARGB(255, 188, 68, 2)),
+                    "Get started with your account!",
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 160, 241, 255),
+                      fontSize: 18, // Increased font size for the text
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center, // Center the text
                   ),
                 ),
                 SizedBox(
@@ -99,7 +104,7 @@ class _SignUpViewState extends State<SignUpView> {
                   controller: userEmail,
                   onChanged: (email) => onEmailChanged(email),
                   cursorColor: const Color.fromARGB(255, 188, 68, 2),
-                  style: TextStyle(color: TColor.white, fontSize: 14),
+                  style: TextStyle(color: TColor.white, fontSize: 16),
                   decoration: InputDecoration(
                     enabledBorder: const OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey, width: 0.0),
@@ -111,7 +116,10 @@ class _SignUpViewState extends State<SignUpView> {
                       ),
                     ),
                     hintText: "Email (e.g., ABC@example.com)",
-                    hintStyle: const TextStyle(color: Color.fromARGB(255, 188, 68, 2)),
+                    hintStyle: const TextStyle(
+                      color: Color.fromARGB(255, 188, 68, 2),
+                      fontSize: 14, // Adjusted font size for hint text
+                    ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                   ),
                 ),
@@ -130,7 +138,7 @@ class _SignUpViewState extends State<SignUpView> {
                   controller: userName,
                   onChanged: (name) => onNameChange(name),
                   cursorColor: const Color.fromARGB(255, 188, 68, 2),
-                  style: TextStyle(color: TColor.white, fontSize: 14),
+                  style: TextStyle(color: TColor.white, fontSize: 16),
                   decoration: InputDecoration(
                     enabledBorder: const OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey, width: 0.0),
@@ -142,7 +150,10 @@ class _SignUpViewState extends State<SignUpView> {
                       ),
                     ),
                     hintText: "Name (e.g., Ahmed Alaa)",
-                    hintStyle: const TextStyle(color: Color.fromARGB(255, 188, 68, 2)),
+                    hintStyle: const TextStyle(
+                      color: Color.fromARGB(255, 188, 68, 2),
+                      fontSize: 14, // Adjusted font size for hint text
+                    ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                   ),
                 ),
@@ -161,7 +172,7 @@ class _SignUpViewState extends State<SignUpView> {
                   controller: userPassword,
                   onChanged: (password) => onPasswordChanged(password),
                   cursorColor: const Color.fromARGB(255, 188, 68, 2),
-                  style: TextStyle(color: TColor.white, fontSize: 14),
+                  style: TextStyle(color: TColor.white, fontSize: 16),
                   decoration: InputDecoration(
                     suffixIcon: IconButton(
                       onPressed: () {
@@ -183,7 +194,10 @@ class _SignUpViewState extends State<SignUpView> {
                       ),
                     ),
                     hintText: "Password (e.g., ********)",
-                    hintStyle: const TextStyle(color: Color.fromARGB(255, 188, 68, 2)),
+                    hintStyle: const TextStyle(
+                      color: Color.fromARGB(255, 188, 68, 2),
+                      fontSize: 14, // Adjusted font size for hint text
+                    ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                   ),
                   obscureText: !_isVisible,
@@ -228,7 +242,7 @@ class _SignUpViewState extends State<SignUpView> {
                       print(response);
                       if (response > 0) {
                         SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-                        sharedPreferences.setString('current_email', userEmail.text.trim()); 
+                        sharedPreferences.setString('current_email', userEmail.text.trim());
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -240,11 +254,15 @@ class _SignUpViewState extends State<SignUpView> {
                   },
                 ),
                 SizedBox(
-                  height: 20, // Spacing after button
+                  height: 50, // Spacing after button
                 ),
                 Text(
                   "Already have an account?",
-                  style: TextStyle(color: TColor.white, fontSize: 14),
+                  style: TextStyle(
+                    color: TColor.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600, // Slightly bolder text
+                  ),
                 ),
                 SizedBox(
                   height: 10, // Spacing after text
