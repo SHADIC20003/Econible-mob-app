@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trackizer/sqldb.dart';
 import 'package:trackizer/view/login/sign_in_view.dart';
 
@@ -226,6 +227,8 @@ class _SignUpViewState extends State<SignUpView> {
                       );
                       print(response);
                       if (response > 0) {
+                        SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+                        sharedPreferences.setString('current_email', userEmail.text.trim()); 
                         Navigator.push(
                           context,
                           MaterialPageRoute(
