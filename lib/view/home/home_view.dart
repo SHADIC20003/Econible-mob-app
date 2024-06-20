@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trackizer/common/color_extension.dart';
 import 'package:trackizer/sqldb.dart';
+import 'package:trackizer/view/Expenses/add_budget.dart';
 import '../../common_widget/custom_arc_painter.dart';
 import '../../common_widget/segment_button.dart';
 import '../../common_widget/status_button.dart';
@@ -181,7 +182,7 @@ String dbbudget = '';
                         height: media.width * 0.055,
                       ),
                       Text(
-                        "This month bills",
+                        "Your budget",
                         style: TextStyle(
                             color: TColor.gray40,
                             fontSize: 12,
@@ -191,7 +192,12 @@ String dbbudget = '';
                         height: media.width * 0.07,
                       ),
                       InkWell(
-                        onTap: () {},
+                         onTap: () {
+                            Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AddBudgetPage()),
+                              );
+                          },
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
@@ -202,7 +208,7 @@ String dbbudget = '';
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
-                            "See your budget",
+                            "press to enter new budget",
                             style: TextStyle(
                                 color: TColor.white,
                                 fontSize: 12,
