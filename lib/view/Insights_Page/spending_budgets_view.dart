@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
 
-
 class SpendingBudgetsView extends StatefulWidget {
   @override
   _SpendingBudgetsViewState createState() => _SpendingBudgetsViewState();
@@ -25,6 +24,7 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
   final Random _random = Random();
   bool _showPieChart = true;
   final List<Color> _categoryColors = [];
+  bool _showLabels = true;
 
   @override
   void initState() {
@@ -42,6 +42,7 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
   void _toggleView() {
     setState(() {
       _showPieChart = !_showPieChart;
+      _showLabels = !_showLabels;
     });
   }
 
@@ -66,19 +67,19 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
     );
   }
 
-   Widget _buildPieChartPage() {
+  Widget _buildPieChartPage() {
     return Stack(
       children: [
         // Upper background layer
         Container(
-    height: 300, // adjust the height as needed
-decoration: BoxDecoration(
-  gradient: LinearGradient(
-    colors: [Colors.blueGrey[800]!, Colors.grey[900]!],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-  ),
-),
+          height: 300, // adjust the height as needed
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blueGrey[800]!, Colors.grey[900]!],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
         ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -113,33 +114,38 @@ decoration: BoxDecoration(
                 ),
               ),
             ),
-            SizedBox(height: 150),
-            Wrap(
-              spacing: 8.0,
-              runSpacing: 8.0,
-              children: List.generate(
-                budgetCategories.length,
-                (index) {
-                  final category = budgetCategories[index];
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _categoryColors[index],
+            Divider(color: Colors.grey[700], thickness: 1), // Add a divider
+            SizedBox(height: 16), // Add some space
+            AnimatedOpacity(
+              opacity: _showLabels ? 1.0 : 0.0,
+              duration: Duration(milliseconds: 500),
+              child: Wrap(
+                spacing: 8.0,
+                runSpacing: 8.0,
+                children: List.generate(
+                  budgetCategories.length,
+                  (index) {
+                    final category = budgetCategories[index];
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _categoryColors[index],
+                          ),
                         ),
-                      ),
-                      SizedBox(width: 8.0),
-                      Text(
-                        category['name'],
-                        style: TextStyle(fontSize: 14, color: Colors.white),
-                      ),
-                    ],
-                  );
-                },
+                        SizedBox(width: 8.0),
+                        Text(
+                          category['name'],
+                          style: TextStyle(fontSize: 14, color: Colors.white),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ],
@@ -148,57 +154,56 @@ decoration: BoxDecoration(
     );
   }
 
-Widget _buildCategoriesPage() {
-  return ListView.builder(
-    itemCount: budgetCategories.length,
-    itemBuilder: (context, index) {
-      final category = budgetCategories[index];
-      return Padding(
-        padding: EdgeInsets.only(bottom: index == budgetCategories.length - 1 ? 100 : 12),
-        child: Container(
-          padding: EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.grey[850],
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _categoryColors[index],
+  Widget _buildCategoriesPage() {
+    return ListView.builder(
+      itemCount: budgetCategories.length,
+      itemBuilder: (context, index) {
+        final category = budgetCategories[index];
+        return Padding(
+          padding: EdgeInsets.only(bottom: index == budgetCategories.length - 1? 100 : 12),
+          child: Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey[850],
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _categoryColors[index],
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    category['name'],
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Priority: ${category['priority']}',
-                style: TextStyle(fontSize: 12, color: Colors.grey[400]),
-              ),
-              SizedBox(height: 4),
-              Text(
-                'Percentage: ${category['percentage'].toStringAsFixed(0)}%',
-                style: TextStyle(fontSize: 12, color: Colors.grey[400]),
-              ),
-            ],
+                    SizedBox(width: 8),
+                    Text(
+                      category['name'],
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Priority: ${category['priority']}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Percentage: ${category['percentage'].toStringAsFixed(0)}%',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
-
+        );
+      },
+    );
+  }
 
   Widget _buildBadge(String category) {
     return Container(
@@ -225,3 +230,4 @@ void main() {
     theme: ThemeData.dark(),
   ));
 }
+
