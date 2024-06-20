@@ -47,13 +47,14 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CircleAvatar(
-              child: Icon(Icons.local_activity),
-              radius: 50.0,
+              child: Image.asset("assets/img/eco3.png"),
+              radius: 100.0,
+              backgroundColor: Colors.white10,
             ),
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: CircularProgressIndicator(
-                backgroundColor: Colors.white,
+                backgroundColor:  Color.fromARGB(69, 255, 255, 255),
               ),
             ),
           ],
