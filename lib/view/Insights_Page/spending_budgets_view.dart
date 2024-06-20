@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
-import 'package:trackizer/common/color_extension.dart';
 
 class SpendingBudgetsView extends StatefulWidget {
   @override
@@ -10,16 +9,16 @@ class SpendingBudgetsView extends StatefulWidget {
 
 class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
   final List<Map<String, dynamic>> budgetCategories = [
-    {"name": "Mortgage or Rent", "icon": "assets/img/rent.png", "priority": "medium", "percentage": 40.0},
-    {"name": "Food", "icon": "assets/img/food.png", "priority": "high", "percentage": 15.0},
-    {"name": "Transportation", "icon": "assets/img/transport.png", "priority": "medium", "percentage": 6.0},
-    {"name": "Utilities", "icon": "assets/img/electricity.png", "priority": "medium", "percentage": 5.0},
-    {"name": "Subscriptions", "icon": "assets/img/subs.png", "priority": "medium", "percentage": 2.0},
-    {"name": "Personal Expenses", "icon": "assets/img/clothes.png", "priority": "low", "percentage": 3.0},
-    {"name": "Savings & Investments", "icon": "assets/img/savings.png", "priority": "high", "percentage": 10.0},
-    {"name": "Debts or Loans", "icon": "assets/img/loans1.png", "priority": "medium", "percentage": 8.0},
-    {"name": "Health care", "icon": "assets/img/medical.png", "priority": "high", "percentage": 9.0},
-    {"name": "Miscellaneous expenses", "icon": "assets/img/more.png", "priority": "low", "percentage": 1.0},
+    {"name": "Mortgage or Rent", "priority": "medium", "percentage": 30.0},
+    {"name": "Food", "priority": "high", "percentage": 15.0},
+    {"name": "Transportation", "priority": "medium", "percentage": 10.0},
+    {"name": "Utilities", "priority": "medium", "percentage": 5.0},
+    {"name": "Subscriptions", "priority": "medium", "percentage": 5.0},
+    {"name": "Personal Expenses", "priority": "low", "percentage": 15.0},
+    {"name": "Savings & Investments", "priority": "high", "percentage": 10.0},
+    {"name": "Debts or Loans", "priority": "medium", "percentage": 8.0},
+    {"name": "Health care", "priority": "high", "percentage": 9.0},
+    {"name": "Miscellaneous expenses", "priority": "low", "percentage": 5.0},
   ];
 
   final Random _random = Random();
@@ -33,6 +32,7 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
   }
 
   void _generateCategoryColors() {
+    _categoryColors.clear();
     for (var i = 0; i < budgetCategories.length; i++) {
       _categoryColors.add(Color(_random.nextInt(0xFFFFFF)).withOpacity(1.0));
     }
@@ -47,10 +47,10 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(80, 80, 80, 75),
+      backgroundColor: Colors.grey[900],
       appBar: AppBar(
         title: Text('Insights Page'),
-        backgroundColor: TColor.gray80,
+        backgroundColor: Colors.grey[850],
         actions: [
           IconButton(
             icon: Icon(_showPieChart ? Icons.list : Icons.pie_chart),
@@ -59,7 +59,7 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.only(bottom: 85.0),
+        padding: const EdgeInsets.all(16.0),
         child: _showPieChart ? _buildPieChartPage() : _buildCategoriesPage(),
       ),
     );
@@ -67,123 +67,145 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
 
   Widget _buildPieChartPage() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: PieChart(
-                PieChartData(
-                  sections: List.generate(
-                    budgetCategories.length,
-                    (index) {
-                      final category = budgetCategories[index];
-                      return PieChartSectionData(
-                        value: category['percentage'],
-                        title: '${category['percentage'].toStringAsFixed(0)}%',
-                        color: _categoryColors[index],
-                        radius: 120,
-                        titleStyle: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      );
-                    },
-                  ),
-                  sectionsSpace: 4,
-                  centerSpaceRadius: 40,
-                  borderData: FlBorderData(show: false),
-                  pieTouchData: PieTouchData(enabled: true),
-                ),
+        AspectRatio(
+          aspectRatio: 1,
+          child: PieChart(
+            PieChartData(
+              sections: List.generate(
+                budgetCategories.length,
+                (index) {
+                  final category = budgetCategories[index];
+                  return PieChartSectionData(
+                    value: category['percentage'],
+                    title: '${category['percentage'].toStringAsFixed(0)}%',
+                    color: _categoryColors[index],
+                    radius: 100,
+                    titleStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    badgeWidget: _buildBadge(category['name']),
+                    badgePositionPercentageOffset: 0.95,
+                  );
+                },
               ),
+              sectionsSpace: 0,
+              centerSpaceRadius: 50,
+              borderData: FlBorderData(show: false),
+              pieTouchData: PieTouchData(enabled: true),
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Wrap(
-            spacing: 8.0,
-            runSpacing: 8.0,
-            children: List.generate(
-              budgetCategories.length,
-              (index) {
-                final category = budgetCategories[index];
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 12,
-                      height: 12,
+        SizedBox(height: 100),
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 8.0,
+          children: List.generate(
+            budgetCategories.length,
+            (index) {
+              final category = budgetCategories[index];
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
                       color: _categoryColors[index],
                     ),
-                    SizedBox(width: 8.0),
-                    Text(category['name']),
-                  ],
-                );
-              },
-            ),
+                  ),
+                  SizedBox(width: 8.0),
+                  Text(
+                    category['name'],
+                    style: TextStyle(fontSize: 14, color: Colors.white),
+                  ),
+                ],
+              );
+            },
           ),
         ),
-            ],
+      ],
     );
   }
 
-  Widget _buildCategoriesPage() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: budgetCategories.length,
-      itemBuilder: (context, index) {
-        final category = budgetCategories[index];
-        return Card(
-          child: ListTile(
-            leading: Container(
-              width: 12,
-              height: 12,
-              color: _categoryColors[index],
-            ),
-            title: Text(
-              category['name'],
-              style: TextStyle(fontSize: 14),
-            ),
-            subtitle: Text(
-              'Priority: ${category['priority'].toUpperCase()} | ${category['percentage'].toStringAsFixed(0)}%',
-              style: TextStyle(fontSize: 12),
-            ),
+Widget _buildCategoriesPage() {
+  return ListView.builder(
+    itemCount: budgetCategories.length,
+    itemBuilder: (context, index) {
+      final category = budgetCategories[index];
+      return Padding(
+        padding: EdgeInsets.only(bottom: index == budgetCategories.length - 1 ? 100 : 12),
+        child: Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.grey[850],
+            borderRadius: BorderRadius.circular(10),
           ),
-        );
-      },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _categoryColors[index],
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    category['name'],
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Priority: ${category['priority']}',
+                style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+              ),
+              SizedBox(height: 4),
+              Text(
+                'Percentage: ${category['percentage'].toStringAsFixed(0)}%',
+                style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+
+  Widget _buildBadge(String category) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.black54,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        category,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
-  }
-
-  Color _getPriorityColor(String priority) {
-    switch (priority) {
-      case 'low':
-        return Colors.orange;
-      case 'medium':
-        return Colors.yellow;
-      case 'high':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  Future<void> _fetchDynamicData() async {
-    // Implement your data fetching logic here
-  }
-
-  void _updateBudgetCategories(List<Map<String, dynamic>> newCategories) {
-    setState(() {
-      budgetCategories.clear();
-      budgetCategories.addAll(newCategories);
-      _generateCategoryColors();
-    });
   }
 }
 
 void main() {
   runApp(MaterialApp(
     home: SpendingBudgetsView(),
+    theme: ThemeData.dark(),
   ));
 }
