@@ -113,7 +113,7 @@ decoration: BoxDecoration(
                 ),
               ),
             ),
-            SizedBox(height: 120),
+            SizedBox(height: 150),
             Wrap(
               spacing: 8.0,
               runSpacing: 8.0,
