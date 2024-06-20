@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trackizer/common/color_extension.dart';
+import 'package:trackizer/sqldb.dart';
+import 'package:trackizer/view/Expenses/add_budget.dart';
 import '../../common_widget/custom_arc_painter.dart';
 import '../../common_widget/segment_button.dart';
 import '../../common_widget/status_button.dart';
@@ -49,6 +52,61 @@ class _HomeViewState extends State<HomeView> {
     {"name": "Electricity", "date": DateTime(2023, 07, 25), "price": "15.00"}
   ];
 
+final SqlDb sqldb = SqlDb();
+  String? email = '';
+  
+String dbbudget = '';
+
+@override
+  void initState() {
+    super.initState();
+    getData(); // Call the getData function here to initially load the data
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    getData(); // Call getData here to refresh data when dependencies change
+  }
+
+  void getData() async {
+    final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    email = sharedPreferences.getString('current_email');
+
+    // Log email to debug
+    print('Fetched email from SharedPreferences: $email');
+
+    if (email != null && email!.isNotEmpty) {
+      // Properly escape the email value to avoid SQL injection
+      String escapedEmail = email!.replaceAll("'", "''");
+
+      // Log the SQL query to debug
+      print('SQL query: SELECT * FROM users WHERE email = \'$escapedEmail\'');
+
+      List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM users WHERE email = '$email' ");
+
+      // Log the data fetched from the database
+      print('Data fetched from the database: $data');
+
+      if (data.isNotEmpty) {
+        setState(() {
+          dbbudget = data[0]['budget'].toString();
+
+          
+        });
+      } else {
+        setState(() {
+          dbbudget = 'User not found';
+         
+        });
+      }
+    } else {
+      setState(() {
+        dbbudget = 'No email found';
+        
+      });
+    }
+  }
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.sizeOf(context);
@@ -114,7 +172,7 @@ class _HomeViewState extends State<HomeView> {
                         height: media.width * 0.07,
                       ),
                       Text(
-                        "\E£10,000",
+                        dbbudget,
                         style: TextStyle(
                             color: TColor.white,
                             fontSize: 40,
@@ -124,7 +182,7 @@ class _HomeViewState extends State<HomeView> {
                         height: media.width * 0.055,
                       ),
                       Text(
-                        "This month bills",
+                        "Your budget",
                         style: TextStyle(
                             color: TColor.gray40,
                             fontSize: 12,
@@ -134,7 +192,12 @@ class _HomeViewState extends State<HomeView> {
                         height: media.width * 0.07,
                       ),
                       InkWell(
-                        onTap: () {},
+                         onTap: () {
+                            Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AddBudgetPage()),
+                              );
+                          },
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
@@ -145,7 +208,7 @@ class _HomeViewState extends State<HomeView> {
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
-                            "See your budget",
+                            "press to enter new budget",
                             style: TextStyle(
                                 color: TColor.white,
                                 fontSize: 12,

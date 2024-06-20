@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trackizer/common/color_extension.dart';
 import 'package:trackizer/common_widget/primary_button.dart';
 import 'package:trackizer/common/round_textfield.dart';
+import 'package:trackizer/sqldb.dart';
+import 'package:trackizer/view/home/home_view.dart';
+import 'package:trackizer/view/main_tab/main_tab_view.dart';
 
 class UserPreferences {
   static String _budgetAmount = '';
@@ -25,6 +29,8 @@ class AddBudgetPage extends StatefulWidget {
 class _AddBudgetPageState extends State<AddBudgetPage> {
   final TextEditingController _budgetController = TextEditingController();
   final descriptionTextStyle = TextStyle(color: Color.fromARGB(255, 11, 163, 228));
+  final SqlDb sqldb = SqlDb();
+  String? email = '';
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +108,7 @@ class _AddBudgetPageState extends State<AddBudgetPage> {
                 right: 20,
               ),
               child: RoundTextField(
+                
                 title: "Budget Amount",
                 titleAlign: TextAlign.center,
                 controller: _budgetController,
@@ -115,11 +122,38 @@ class _AddBudgetPageState extends State<AddBudgetPage> {
               ),
               child: PrimaryButton(
                 title: "Set Budget",
-                onPressed: () {
-                  // Save the budget amount to the user's profile
-                  final budgetAmount = _budgetController.text;
-                  UserPreferences.setBudgetAmount(budgetAmount);
-                  Navigator.pushReplacementNamed(context, '/home');
+                onPressed: () async {
+                  final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+                  email = sharedPreferences.getString('current_email');
+
+                    // Log email to debug
+                print('Fetched email from SharedPreferences: $email');
+
+              if (email != null && email!.isNotEmpty) {
+                  int response = await sqldb.insertData(
+                        "UPDATE 'users' SET 'budget' = ${_budgetController.text.trim()} WHERE email = '$email'",
+                      );
+                      print(response);
+                      if (response > 0) {
+                        email = sharedPreferences.getString('current_email');
+                        print('$email');
+                        List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM users WHERE email = '$email' ");
+
+      // Log the data fetched from the database
+      print('Data fetched from the database: $data');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MainTabView(),
+                          ),
+                        );
+                      }
+                      else{
+                        print("couldnt insert the budget into users accout");
+                      }
+                    }else {
+                      print("email not found in shared preferences");
+                    }
                 },
               ),
             ),
