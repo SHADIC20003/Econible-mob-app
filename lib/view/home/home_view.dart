@@ -208,7 +208,7 @@ String dbbudget = '';
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
-                            "press to enter new budget",
+                            "Enter a new budget",
                             style: TextStyle(
                                 color: TColor.white,
                                 fontSize: 12,

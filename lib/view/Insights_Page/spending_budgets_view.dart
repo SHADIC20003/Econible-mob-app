@@ -47,9 +47,10 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-            backgroundColor: Color.fromARGB(80, 80, 80, 75),
+      backgroundColor: Color.fromARGB(80, 80, 80, 75),
       appBar: AppBar(
-        title: Text('Insights Page') , backgroundColor: TColor.gray80,
+        title: Text('Insights Page'),
+        backgroundColor: TColor.gray80,
         actions: [
           IconButton(
             icon: Icon(_showPieChart ? Icons.list : Icons.pie_chart),
@@ -124,7 +125,7 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
             ),
           ),
         ),
-      ],
+            ],
     );
   }
 
@@ -134,19 +135,21 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
       itemCount: budgetCategories.length,
       itemBuilder: (context, index) {
         final category = budgetCategories[index];
-        return ListTile(
-          leading: Container(
-            width: 12,
-            height: 12,
-            color: _categoryColors[index],
-          ),
-          title: Text(
-            category['name'],
-            style: TextStyle(fontSize: 14),
-          ),
-          subtitle: Text(
-            'Priority: ${category['priority'].toUpperCase()} | ${category['percentage'].toStringAsFixed(0)}%',
-            style: TextStyle(fontSize: 12),
+        return Card(
+          child: ListTile(
+            leading: Container(
+              width: 12,
+              height: 12,
+              color: _categoryColors[index],
+            ),
+            title: Text(
+              category['name'],
+              style: TextStyle(fontSize: 14),
+            ),
+            subtitle: Text(
+              'Priority: ${category['priority'].toUpperCase()} | ${category['percentage'].toStringAsFixed(0)}%',
+              style: TextStyle(fontSize: 12),
+            ),
           ),
         );
       },
