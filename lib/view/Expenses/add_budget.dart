@@ -137,7 +137,7 @@ class _AddBudgetPageState extends State<AddBudgetPage> {
                       
                         email = sharedPreferences.getString('current_email');
                         print('$email');
-                        List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM users WHERE email = '$email' ");
+                       // List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM users WHERE email = '$email' ");
 
       // Log the data fetched from the database
       //print('Data fetched from the database: $data');
