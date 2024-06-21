@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
+import 'package:trackizer/sqldb.dart';
+
 class SetGoalsPage extends StatefulWidget {
   @override
   _SetGoalsPageState createState() => _SetGoalsPageState();
@@ -40,9 +42,22 @@ class _SetGoalsPageState extends State<SetGoalsPage> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('goals', json.encode(_goals));
   }
-
+final SqlDb sqldb = SqlDb();
+  String? email = '';
   Future<void> _addGoal() async {
     if (_formKey.currentState!.validate()) {
+      final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+                                  email = sharedPreferences.getString('current_email');
+      if (email != null && email!.isNotEmpty) {
+       //List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM Expense WHERE userEmail = '$email' ");
+        //print('$data');
+          int response = await sqldb.insertData(
+                        "INSERT INTO 'Goal' ('userEmail','title','description') VALUES ('$email','${_goalNameController.text}','${_goalDescriptionController.text}')",
+                      );
+         //print('$response');     
+          List<Map<String, dynamic>> bigData = await sqldb.readData("SELECT * FROM 'Goal' where userEmail='$email'");
+          print("$bigData");
+      }
       _formKey.currentState!.save();
       setState(() {
         _goals.add({
@@ -58,6 +73,15 @@ class _SetGoalsPageState extends State<SetGoalsPage> {
   }
 
   Future<void> _deleteGoal(int index) async {
+    final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+      email = sharedPreferences.getString('current_email');
+      if (email != null && email!.isNotEmpty) {
+            int response = await sqldb.deleteData("DELETE FROM Goal WHERE title = '${_goals[index]['name']}' AND userEmail = '$email'");
+                                    
+         //print('$response');     
+          List<Map<String, dynamic>> bigData = await sqldb.readData("SELECT * FROM 'Goal' where userEmail='$email'");
+          print("$bigData");
+      }
     setState(() {
       _goals.removeAt(index);
     });

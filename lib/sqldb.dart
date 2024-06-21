@@ -71,6 +71,7 @@ CREATE TABLE 'Goal'(
     goalID INTEGER PRIMARY KEY AUTOINCREMENT,
     userEmail TEXT ,
     title TEXT,
+    description TEXT,
     targetAmount REAL,
     dueDate DATETIME,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
