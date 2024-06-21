@@ -250,7 +250,7 @@ setState(() {
                         width: media.width * 0.72,
                         height: media.width * 0.72,
                         child: CustomPaint(
-                          painter: CustomArcPainter(end: 220, ),
+                          painter: CustomArcPainter(end: 270, ),
                         ),
                       ),
 

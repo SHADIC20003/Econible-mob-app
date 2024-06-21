@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trackizer/sqldb.dart';
 
 class SpendingBudgetsView extends StatefulWidget {
   @override
@@ -8,28 +10,37 @@ class SpendingBudgetsView extends StatefulWidget {
 }
 
 class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
-  final List<Map<String, dynamic>> budgetCategories = [
-    {"name": "Mortgage or Rent", "priority": "medium", "percentage": 30.0},
-    {"name": "Food", "priority": "high", "percentage": 15.0},
-    {"name": "Transportation", "priority": "medium", "percentage": 10.0},
-    {"name": "Utilities", "priority": "medium", "percentage": 5.0},
-    {"name": "Subscriptions", "priority": "medium", "percentage": 5.0},
-    {"name": "Personal Expenses", "priority": "low", "percentage": 15.0},
-    {"name": "Savings & Investments", "priority": "high", "percentage": 10.0},
-    {"name": "Debts or Loans", "priority": "medium", "percentage": 8.0},
-    {"name": "Health care", "priority": "high", "percentage": 9.0},
-    {"name": "Miscellaneous expenses", "priority": "low", "percentage": 5.0},
-  ];
-
   final Random _random = Random();
   bool _showPieChart = true;
   final List<Color> _categoryColors = [];
   bool _showLabels = true;
+  List<Map<String, dynamic>> budgetCategories = [];
+  final SqlDb sqldb = SqlDb();
+  String? email = '';
 
   @override
   void initState() {
     super.initState();
-    _generateCategoryColors();
+    _fetchExpenseData();
+  }
+
+  Future<void> _fetchExpenseData() async {
+    final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    email = sharedPreferences.getString('current_email');
+
+    if (email != null && email!.isNotEmpty) {
+      List<Map<String, dynamic>> data = await sqldb.readData("SELECT category, priority, SUM(amount) as totalAmount FROM Expense WHERE userEmail = '$email' GROUP BY category");
+      double totalAmount = data.fold(0, (sum, item) => sum + (item['totalAmount'] ?? 0.0));
+
+      setState(() {
+        budgetCategories = data.map((item) => {
+          "name": item['category'] ?? 'Unknown',
+          "priority": item['priority'] ?? 'Low',
+          "percentage": (item['totalAmount'] ?? 0) / totalAmount * 100,
+        }).toList();
+        _generateCategoryColors();
+      });
+    }
   }
 
   void _generateCategoryColors() {
@@ -72,7 +83,7 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
       children: [
         // Upper background layer
         Container(
-          height: 300, // adjust the height as needed
+          height: 300, // Adjust the height as needed
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [Colors.blueGrey[800]!, Colors.grey[900]!],
@@ -160,7 +171,7 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
       itemBuilder: (context, index) {
         final category = budgetCategories[index];
         return Padding(
-          padding: EdgeInsets.only(bottom: index == budgetCategories.length - 1? 100 : 12),
+          padding: EdgeInsets.only(bottom: index == budgetCategories.length - 1 ? 100 : 12),
           child: Container(
             padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -230,4 +241,3 @@ void main() {
     theme: ThemeData.dark(),
   ));
 }
-

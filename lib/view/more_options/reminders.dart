@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import 'package:trackizer/common/color_extension.dart';
+import 'package:trackizer/view/more_options/sqldbreminders.dart'; // Import the SQL database helper class
 
 class RemindersPage extends StatefulWidget {
   @override
@@ -14,7 +13,7 @@ class _RemindersPageState extends State<RemindersPage> {
   final _formKey = GlobalKey<FormState>();
   final _expenseNameController = TextEditingController();
   final _expenseAmountController = TextEditingController();
-  List<Map<String, String>> _reminders = [];
+  List<Map<String, dynamic>> _reminders = [];
 
   @override
   void initState() {
@@ -31,42 +30,33 @@ class _RemindersPageState extends State<RemindersPage> {
   }
 
   Future<void> _loadReminders() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? remindersString = prefs.getString('reminders');
-    if (remindersString != null) {
-      setState(() {
-        _reminders = List<Map<String, String>>.from(json.decode(remindersString));
-      });
-    }
-  }
-
-  Future<void> _saveReminders() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('reminders', json.encode(_reminders));
+    final SqlDb sqlDb = SqlDb();
+    final List<Map<String, dynamic>> reminders = await sqlDb.getReminders();
+    setState(() {
+      _reminders = reminders;
+    });
   }
 
   Future<void> _addReminder() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      setState(() {
-        _reminders.add({
-          'name': _expenseNameController.text,
-          'date': _expenseDateController.text,
-          'amount': _expenseAmountController.text,
-        });
-        _expenseNameController.clear();
-        _expenseDateController.clear();
-        _expenseAmountController.clear();
+      final SqlDb sqlDb = SqlDb();
+      await sqlDb.insertReminder({
+        'name': _expenseNameController.text,
+        'date': _expenseDateController.text,
+        'amount': _expenseAmountController.text,
       });
-      await _saveReminders();
+      _expenseNameController.clear();
+      _expenseDateController.clear();
+      _expenseAmountController.clear();
+      _loadReminders();
     }
   }
 
-  Future<void> _deleteReminder(int index) async {
-    setState(() {
-      _reminders.removeAt(index);
-    });
-    await _saveReminders();
+  Future<void> _deleteReminder(int id) async {
+    final SqlDb sqlDb = SqlDb();
+    await sqlDb.deleteReminder(id);
+    _loadReminders();
   }
 
   @override
@@ -184,14 +174,14 @@ class _RemindersPageState extends State<RemindersPage> {
                         color: Color.fromRGBO(70, 70, 70, 1),
                         margin: EdgeInsets.symmetric(vertical: 10),
                         child: ListTile(
-                          title: Text(reminder['name']!, style: TextStyle(color: Colors.white)),
+                          title: Text(reminder['name'], style: TextStyle(color: Colors.white)),
                           subtitle: Text(
                             'Date: ${reminder['date']} - Amount: ${reminder['amount']}',
                             style: TextStyle(color: Colors.white70),
                           ),
                           trailing: IconButton(
                             icon: Icon(Icons.delete, color: Colors.redAccent),
-                            onPressed: () => _deleteReminder(index),
+                            onPressed: () => _deleteReminder(reminder['id']),
                           ),
                         ),
                       );
@@ -214,3 +204,4 @@ class TColor {
   static const gray60 = Color(0xFF646464);
   static const white = Color(0xFFFFFFFF);
 }
+
