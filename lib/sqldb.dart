@@ -23,7 +23,7 @@ class SqlDb{
   }
 
   _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion != newVersion) {
+    /*if (oldVersion != newVersion) {
         await db.execute('''
             CREATE TABLE Expense (
                 ExpenseID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,12 +37,26 @@ class SqlDb{
                 FOREIGN KEY (userEmail) REFERENCES users(email)
             );
         ''');
-    }
+    }*/
 }
 
   _onCreate(Database db, int version) async{//this fucntion we use to create the tables of the database 
       await db.execute('''
-       CREATE TABLE 'users'(
+CREATE TABLE Expense (
+                ExpenseID INTEGER PRIMARY KEY AUTOINCREMENT,
+                userEmail TEXT,
+                category TEXT,
+                priority TEXT,
+                amount REAL,
+                'date' Date,
+                description TEXT,
+                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (userEmail) REFERENCES users(email)
+            );''');
+
+
+      await db.execute(''' 
+      CREATE TABLE 'users'(
               'userID' INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
               'userName' TEXT NOT NULL,
               'email' TEXT NOT NULL,
@@ -51,21 +65,8 @@ class SqlDb{
     'remainingBudget' REAL,
     'createdAt' DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-
-
--- Create Expense table
-CREATE TABLE Expense (
-    ExpenseID INTEGER PRIMARY KEY AUTOINCREMENT,
-    userEmail TEXT,
-    category TEXT,
-    priority TEXT,
-    amount REAL,
-    date TEXT,
-    description TEXT,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (userEmail) REFERENCES users(email)
-);
--- Create Goal table
+''');
+await db.execute('''
 CREATE TABLE 'Goal'(
     goalID INTEGER PRIMARY KEY AUTOINCREMENT,
     userEmail TEXT ,
@@ -75,8 +76,8 @@ CREATE TABLE 'Goal'(
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userEmail) REFERENCES users(email)
 );
-
--- Create Notification table
+''');
+await db.execute('''
 CREATE TABLE 'Notification'(
     NotificationID INTEGER PRIMARY KEY AUTOINCREMENT,
     userEmail TEXT ,
@@ -86,10 +87,10 @@ CREATE TABLE 'Notification'(
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userEmail) REFERENCES users(email)
 );
-
+''');
 
         
-      ''');
+      
 
         /*await db.execute('''
             CREATE TABLE "notes"(

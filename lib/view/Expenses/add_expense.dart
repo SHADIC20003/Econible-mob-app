@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:trackizer/common/color_extension.dart';
 import 'package:trackizer/common_widget/round_textfield.dart';
+import 'package:trackizer/view/main_tab/main_tab_view.dart';
 
 class AddSubScriptionView extends StatefulWidget {
   const AddSubScriptionView({Key? key}) : super(key: key);
@@ -437,7 +438,14 @@ final SqlDb sqldb = SqlDb();
                         "INSERT INTO 'Expense' ('userEmail','category','description','amount','priority','date') VALUES ('$email','${subObj["name"]}','${txtDescription.text}',${amountVal.toStringAsFixed(2)},'${_getPriorityText(_priority)}','${dateController.text}')",
                       );
          //print('$response');     
-
+          List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM Expense where userEmail='$email'");
+          //print("$data");
+          Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MainTabView(),
+                          ),
+                        );
      }
     // Add your save logic here
   }

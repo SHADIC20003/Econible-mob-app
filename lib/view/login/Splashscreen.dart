@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
     setState(() {
       finalEmail = obtainedEmail;
     });
-    print(finalEmail);
+    //print(finalEmail);
   }
 
   @override
