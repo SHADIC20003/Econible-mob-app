@@ -56,7 +56,7 @@ final SqlDb sqldb = SqlDb();
                       );
          //print('$response');     
           List<Map<String, dynamic>> bigData = await sqldb.readData("SELECT * FROM 'Goal' where userEmail='$email'");
-          print("$bigData");
+          //print("$bigData");
       }
       _formKey.currentState!.save();
       setState(() {
@@ -80,7 +80,7 @@ final SqlDb sqldb = SqlDb();
                                     
          //print('$response');     
           List<Map<String, dynamic>> bigData = await sqldb.readData("SELECT * FROM 'Goal' where userEmail='$email'");
-          print("$bigData");
+          //print("$bigData");
       }
     setState(() {
       _goals.removeAt(index);

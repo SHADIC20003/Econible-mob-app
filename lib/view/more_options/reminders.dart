@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trackizer/common/color_extension.dart';
 import 'package:trackizer/view/more_options/sqldbreminders.dart'; // Import the SQL database helper class
-
+import 'package:trackizer/sqldb.dart';
 class RemindersPage extends StatefulWidget {
   @override
   _RemindersPageState createState() => _RemindersPageState();
@@ -30,17 +31,31 @@ class _RemindersPageState extends State<RemindersPage> {
   }
 
   Future<void> _loadReminders() async {
-    final SqlDb sqlDb = SqlDb();
+    final sqldb sqlDb = sqldb();
     final List<Map<String, dynamic>> reminders = await sqlDb.getReminders();
     setState(() {
       _reminders = reminders;
     });
   }
+final SqlDb sqldb1 = SqlDb();
+  String? email = '';
 
   Future<void> _addReminder() async {
     if (_formKey.currentState!.validate()) {
+      final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+                                  email = sharedPreferences.getString('current_email');
+      if (email != null && email!.isNotEmpty) {
+       //List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM Expense WHERE userEmail = '$email' ");
+        //print('$data');
+          int response = await sqldb1.insertData(
+                        "INSERT INTO 'Notification' ('userEmail','title','date','Amount') VALUES ('$email','${_expenseNameController.text}','${ _expenseDateController.text}','${_expenseAmountController.text}')",
+                      );
+         //print('$response');     
+          List<Map<String, dynamic>> bigData = await sqldb1.readData("SELECT * FROM 'Notification' where userEmail='$email'");
+          print("$bigData");
+      }
       _formKey.currentState!.save();
-      final SqlDb sqlDb = SqlDb();
+      final sqldb sqlDb = sqldb();
       await sqlDb.insertReminder({
         'name': _expenseNameController.text,
         'date': _expenseDateController.text,
@@ -54,7 +69,16 @@ class _RemindersPageState extends State<RemindersPage> {
   }
 
   Future<void> _deleteReminder(int id) async {
-    final SqlDb sqlDb = SqlDb();
+    final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+      email = sharedPreferences.getString('current_email');
+      if (email != null && email!.isNotEmpty) {
+            int response = await sqldb1.deleteData("DELETE FROM 'Notification' WHERE NotificationID = '${id.toString()}' AND userEmail = '$email'");
+                                    
+         //print('$response');     
+          List<Map<String, dynamic>> bigData = await sqldb1.readData("SELECT * FROM 'Notification' where userEmail='$email'");
+          print("$bigData");
+      }
+    final sqldb sqlDb = sqldb();
     await sqlDb.deleteReminder(id);
     _loadReminders();
   }
@@ -204,4 +228,3 @@ class TColor {
   static const gray60 = Color(0xFF646464);
   static const white = Color(0xFFFFFFFF);
 }
-

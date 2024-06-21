@@ -83,7 +83,9 @@ CREATE TABLE 'Notification'(
     NotificationID INTEGER PRIMARY KEY AUTOINCREMENT,
     userEmail TEXT ,
     title TEXT ,
+   'date' Date,
     message TEXT,
+    Amount REAL,
     isRead BOOLEAN DEFAULT FALSE,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userEmail) REFERENCES users(email)

@@ -1,12 +1,12 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-class SqlDb {
-  static final SqlDb _instance = SqlDb._internal();
-  factory SqlDb() => _instance;
+class sqldb {
+  static final sqldb _instance = sqldb._internal();
+  factory sqldb() => _instance;
   static Database? _database;
 
-  SqlDb._internal();
+  sqldb._internal();
 
   Future<Database> get database async {
     if (_database != null) return _database!;
