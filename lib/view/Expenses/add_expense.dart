@@ -3,9 +3,12 @@ import 'package:intl/intl.dart';
 import 'package:trackizer/common_widget/image_button.dart';
 import 'package:trackizer/common_widget/primary_button.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:trackizer/sqldb.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:trackizer/common/color_extension.dart';
 import 'package:trackizer/common_widget/round_textfield.dart';
+import 'package:trackizer/view/main_tab/main_tab_view.dart';
 
 class AddSubScriptionView extends StatefulWidget {
   const AddSubScriptionView({Key? key}) : super(key: key);
@@ -36,6 +39,9 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
   int selectedCategoryIndex = 0;
   int _priority = 1; // Default priority is 1
 
+final SqlDb sqldb = SqlDb();
+  String? email = '';
+  
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
@@ -412,13 +418,35 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
     }
   }
 
-  void _saveExpense() {
+  Future<void> _saveExpense() async {
+   // sqldb.mydeleteDatabase();
     var subObj = subArr[selectedCategoryIndex] as Map? ?? {};
-    print("Category Name: ${subObj["name"]}");
+
+    /*print("Category Name: ${subObj["name"]}");
     print("Description: ${txtDescription.text}");
     print("Amount: E£${amountVal.toStringAsFixed(2)}");
     print("Priority: ${_getPriorityText(_priority)}");
-    print("Date: ${dateController.text}");
+    print("Date: ${dateController.text}");*/
+
+    final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    email = sharedPreferences.getString('current_email');
+
+     if (email != null && email!.isNotEmpty) {
+       //List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM Expense WHERE userEmail = '$email' ");
+        //print('$data');
+          int response = await sqldb.insertData(
+                        "INSERT INTO 'Expense' ('userEmail','category','description','amount','priority','date') VALUES ('$email','${subObj["name"]}','${txtDescription.text}',${amountVal.toStringAsFixed(2)},'${_getPriorityText(_priority)}','${dateController.text}')",
+                      );
+         //print('$response');     
+          List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM Expense where userEmail='$email'");
+          //print("$data");
+          Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MainTabView(),
+                          ),
+                        );
+     }
     // Add your save logic here
   }
 }

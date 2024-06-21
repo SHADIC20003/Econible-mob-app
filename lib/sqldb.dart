@@ -18,25 +18,45 @@ class SqlDb{
   initialDb() async{
     String databasepath = await getDatabasesPath(); //this initializes the path to save the database in the phone automatically
     String path = join(databasepath,'wael.db');//we create a database called wael.db to in that path
-    Database mydb = await openDatabase(path,onCreate: _onCreate ,version: 21,onUpgrade: _onUpgrade  );//we open the database 
+    Database mydb = await openDatabase(path,onCreate: _onCreate ,version: 42,onUpgrade: _onUpgrade);//we open the database 
     return mydb;
   }
 
-  _onUpgrade(Database db, int oldversion, int newversion ) async {
-   /* await db.execute('''
-          
-Drop table users ;
-Drop table Goal;
-Drop table Notification;
-DROp TABLE Expense;
-      ''');
-
-    print("on upgrade ================================");*/
-  }
+  _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    /*if (oldVersion != newVersion) {
+        await db.execute('''
+            CREATE TABLE Expense (
+                ExpenseID INTEGER PRIMARY KEY AUTOINCREMENT,
+                userEmail TEXT,
+                category TEXT,
+                priority TEXT,
+                amount REAL,
+                date TEXT,
+                description TEXT,
+                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (userEmail) REFERENCES users(email)
+            );
+        ''');
+    }*/
+}
 
   _onCreate(Database db, int version) async{//this fucntion we use to create the tables of the database 
       await db.execute('''
-        CREATE TABLE 'users'(
+CREATE TABLE Expense (
+                ExpenseID INTEGER PRIMARY KEY AUTOINCREMENT,
+                userEmail TEXT,
+                category TEXT,
+                priority TEXT,
+                amount REAL,
+                'date' Date,
+                description TEXT,
+                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (userEmail) REFERENCES users(email)
+            );''');
+
+
+      await db.execute(''' 
+      CREATE TABLE 'users'(
               'userID' INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
               'userName' TEXT NOT NULL,
               'email' TEXT NOT NULL,
@@ -45,45 +65,32 @@ DROp TABLE Expense;
     'remainingBudget' REAL,
     'createdAt' DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-
-
--- Create Expense table
-CREATE TABLE Expense (
-    'ExpenseID' INTEGER PRIMARY KEY AUTOINCREMENT,
-    'userEmail' INTEGER ,
-    'category' TEXT ,
-    'priority' TEXT ,
-    'amount' REAL ,
-    'date' DATETIME,
-    'description' TEXT,
-    'createdAt' DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (userEmail) REFERENCES users(email)
-);
-
--- Create Goal table
-CREATE TABLE Goal (
+''');
+await db.execute('''
+CREATE TABLE 'Goal'(
     goalID INTEGER PRIMARY KEY AUTOINCREMENT,
-    userEmail INTEGER ,
+    userEmail TEXT ,
     title TEXT,
     targetAmount REAL,
     dueDate DATETIME,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userEmail) REFERENCES users(email)
 );
-
--- Create Notification table
-CREATE TABLE Notification (
+''');
+await db.execute('''
+CREATE TABLE 'Notification'(
     NotificationID INTEGER PRIMARY KEY AUTOINCREMENT,
-    userEmail INTEGER ,
+    userEmail TEXT ,
     title TEXT ,
     message TEXT,
     isRead BOOLEAN DEFAULT FALSE,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userEmail) REFERENCES users(email)
 );
+''');
 
         
-      ''');
+      
 
         /*await db.execute('''
             CREATE TABLE "notes"(

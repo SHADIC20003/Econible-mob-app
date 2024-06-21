@@ -21,8 +21,9 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   bool isSubscription = true;
-  List subArr = [
-    {"name": "Renting Expenses", "icon": "assets/img/rent.png", "price": "3,000"},
+ List<dynamic> subArr = [];
+ 
+ /*[ {"name": "Renting Expenses", "icon": "assets/img/rent.png", "price": "3,000"},
     {
       "name": "Food",
       "icon": "assets/img/food.png",
@@ -35,9 +36,9 @@ class _HomeViewState extends State<HomeView> {
     },
     {"name": "Electricity", "icon": "assets/img/electricity.png", "price": "300"}
     
-  ];
+  ];*/
 
-  List bilArr = [
+  /*List bilArr = [
     {"name": "Renting Expenses", "date": DateTime(2023, 07, 25), "price": "3,000"},
     {
       "name": "Food",
@@ -50,12 +51,15 @@ class _HomeViewState extends State<HomeView> {
       "price": "200"
     },
     {"name": "Electricity", "date": DateTime(2023, 07, 25), "price": "15.00"}
-  ];
+  ];*/
 
 final SqlDb sqldb = SqlDb();
   String? email = '';
   
 String dbbudget = '';
+String num_of_expenses = '';
+String highest_expense = '';
+String lowest_expense = '';
 
 @override
   void initState() {
@@ -74,7 +78,7 @@ String dbbudget = '';
     email = sharedPreferences.getString('current_email');
 
     // Log email to debug
-    print('Fetched email from SharedPreferences: $email');
+    //print('Fetched email from SharedPreferences: $email');
 
     if (email != null && email!.isNotEmpty) {
       // Properly escape the email value to avoid SQL injection
@@ -86,12 +90,11 @@ String dbbudget = '';
       List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM users WHERE email = '$email' ");
 
       // Log the data fetched from the database
-      //print('Data fetched from the database: $data');
+      print('Data fetched from the database: $data');
 
       if (data.isNotEmpty) {
         setState(() {
           dbbudget = data[0]['budget'].toString();
-
           
         });
       } else {
@@ -100,6 +103,119 @@ String dbbudget = '';
          
         });
       }
+
+        //current expenses 
+          List<Map<String, dynamic>> expenses = await sqldb.readData("SELECT COUNT(*) AS 'expense_count' FROM Expense WHERE userEmail = '$email'");
+          print("$expenses");
+
+      if (expenses.isNotEmpty) {
+        setState((){
+           num_of_expenses = expenses[0]['expense_count'].toString();
+          
+        });
+      } else {
+        setState(() {
+          num_of_expenses = 'User not found';
+         
+        });
+      }
+       
+
+      //highest price 
+      List<Map<String, dynamic>> Hprice = await sqldb.readData("SELECT MAX(amount) AS 'highest' FROM Expense WHERE userEmail = '$email'");
+          print("$Hprice");
+
+      if (Hprice.isNotEmpty) {
+        setState((){
+          
+           highest_expense = Hprice[0]['highest'].toString();
+           if(highest_expense=='null'){
+            highest_expense='0';
+           }
+          
+        });
+      } else {
+        setState(() {
+          num_of_expenses = 'User not found';
+         
+        });
+      }
+      //lowest price 
+      List<Map<String, dynamic>> Lprice = await sqldb.readData("SELECT MIN(amount) AS 'lowest' FROM Expense WHERE userEmail = '$email'");
+          print("$Lprice");
+
+      if (Lprice.isNotEmpty) {
+        setState((){
+           lowest_expense = Lprice[0]['lowest'].toString();
+          if(lowest_expense=='null'){
+            lowest_expense='0';
+           }
+        });
+      } else {
+        setState(() {
+          num_of_expenses = 'User not found';
+         
+        });
+      }
+
+    //filling the expense array 
+      // clear the list before filling it again
+List<dynamic> bigData = await sqldb.readData("SELECT * FROM Expense WHERE userEmail = '$email' ");          
+//print("$bigData");
+setState(() {
+  subArr.clear();
+  for (var element in bigData) {
+     String icon;
+    switch (element["category"]) {
+      case "Food":
+        icon = "assets/img/food.png";
+        break;
+      case "Mortgage or Rent":
+        icon = "assets/img/rent.png";
+        break;
+      case "Transportation":
+        icon = "assets/img/transport.png";
+        break;
+        case "Utilities":
+        icon = "assets/img/electricity.png";
+        break;
+        case "Subscriptions":
+        icon = "assets/img/subs.png";
+        break;
+        case "Personal Expenses":
+        icon = "assets/img/clothes.png";
+        break;
+        case "Savings & Investments":
+        icon = "assets/img/savings.png";
+        break;
+        case "Debts or Loans":
+        icon = "assets/img/loans1.png";
+        break;
+        case "Health care":
+        icon = "assets/img/insurance.png";
+        break;
+        case "Miscellaneous expenses":
+        icon = "assets/img/more.png";
+        break;
+      // Add more cases as needed
+      default:
+        icon = "assets/img/more.png"; // or any other default icon
+    }
+    String Id = element["ExpenseID"].toString();
+    subArr.add({
+      "ID": Id,
+      "name": element["category"],
+      "priority":element["priority"],
+      "date":element["date"],
+      "description":element["description"],
+      "createdAt":element["createdAt"],
+      "icon": icon,
+      "price": element["amount"]
+    });
+  }
+});
+    
+
     } else {
       setState(() {
         dbbudget = 'No email found';
@@ -228,7 +344,7 @@ String dbbudget = '';
                             Expanded(
                               child: StatusButton(
                                 title: "Current Expenses",
-                                value: "12",
+                                value: num_of_expenses,
                                 statusColor: TColor.secondary,
                                 onPressed: () {},
                               ),
@@ -239,7 +355,7 @@ String dbbudget = '';
                             Expanded(
                               child: StatusButton(
                                 title: "Highest Expense",
-                                value: "\E£3,000",
+                                value: "E£$highest_expense",
                                 statusColor: TColor.primary10,
                                 onPressed: () {},
                               ),
@@ -250,7 +366,7 @@ String dbbudget = '';
                             Expanded(
                               child: StatusButton(
                                 title: "Lowest Expense",
-                                value: "\E£50",
+                                value: "E£$lowest_expense",
                                 statusColor: TColor.secondaryG,
                                 onPressed: () {},
                               ),
