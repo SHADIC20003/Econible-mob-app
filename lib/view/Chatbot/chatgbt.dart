@@ -49,9 +49,30 @@ class _ChatPageState extends State<ChatPage> {
                           bottomRight: isUserMessage ? Radius.circular(0) : Radius.circular(12.0),
                         ),
                       ),
-                      child: Text(
-                        message['message'],
-                        style: TextStyle(color: Colors.white),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: isUserMessage ? MainAxisAlignment.end : MainAxisAlignment.start,
+                        children: [
+                          if (!isUserMessage) ...[
+                            Padding(
+                              padding: EdgeInsets.only(right: 8.0),
+                              child: Icon(Icons.android, color: Colors.green, size: 20),
+                            ),
+                          ],
+                          Expanded(
+                            child: Text(
+                              message['message'],
+                              style: TextStyle(color: Colors.white),
+                              textAlign: isUserMessage ? TextAlign.end : TextAlign.start,
+                            ),
+                          ),
+                          if (isUserMessage) ...[
+                            Padding(
+                              padding: EdgeInsets.only(left: 8.0),
+                              child: Icon(Icons.person, color: Colors.white, size: 20),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   );
@@ -106,22 +127,7 @@ class _ChatPageState extends State<ChatPage> {
               icon: Icon(Icons.send, color: Colors.white),
               onPressed: () {
                 if (_userMessageController.text.isNotEmpty) {
-                  setState(() {
-                    _chatMessages.insert(0, {
-                      'message': _userMessageController.text,
-                      'isUserMessage': true,
-                    });
-                    _userMessageController.clear();
-                  });
-                  // Add chatbot response simulation for now
-                  Future.delayed(Duration(milliseconds: 500), () {
-                    setState(() {
-                      _chatMessages.insert(0, {
-                        'message': 'This is a response from the finance advisor bot.',
-                        'isUserMessage': false,
-                      });
-                    });
-                  });
+                  sendMessage(_userMessageController.text);
                 }
               },
             ),
@@ -129,5 +135,29 @@ class _ChatPageState extends State<ChatPage> {
         ],
       ),
     );
+  }
+
+  void sendMessage(String messageText) {
+    setState(() {
+      _chatMessages.insert(0, {
+        'message': messageText,
+        'isUserMessage': true,
+      });
+      _userMessageController.clear();
+    });
+
+    // Simulate a response from the chatbot after a short delay
+    simulateChatbotResponse();
+  }
+
+  void simulateChatbotResponse() {
+    Future.delayed(Duration(milliseconds: 500), () {
+      setState(() {
+        _chatMessages.insert(0, {
+          'message': 'This is a response from the finance advisor bot.',
+          'isUserMessage': false,
+        });
+      });
+    });
   }
 }
