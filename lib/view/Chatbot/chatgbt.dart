@@ -129,18 +129,25 @@ class _ChatPageState extends State<ChatPage> {
               icon: Icon(Icons.send, color: Colors.white),
               onPressed: () async {
                 if (_userMessageController.text.isNotEmpty) {
+                  
                   //sendMessage(_userMessageController.text);
                   final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: "AIzaSyDcU8MCVojgGDseYjyRVGCT3D-BihZimJM");
-                  final content = [Content.text('tell me a financial advi')];
+                  final content = [Content.text(_userMessageController.text)];
                   setState(() {
                     _chatMessages.insert(0, {
-                    'message': _userMessageController,
+                    'message': _userMessageController.text,
                     'isUserMessage': true,
                       });
                   _userMessageController.clear();
                  });
                 final response = await model.generateContent(content);
-                print(response.text);
+                setState(() {
+                  _chatMessages.insert(0, {
+                  'message': response.text,
+                  'isUserMessage': false,
+                });
+              });
+                //print(response.text);
 
 
                 }
@@ -153,7 +160,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void sendMessage(String messageText) {
-    final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: "AIzaSyDcU8MCVojgGDseYjyRVGCT3D-BihZimJM");
+    //final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: "AIzaSyDcU8MCVojgGDseYjyRVGCT3D-BihZimJM");
 
     setState(() {
       _chatMessages.insert(0, {
