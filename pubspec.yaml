@@ -51,6 +51,7 @@ dependencies:
   carousel_slider: ^4.2.1
   card_swiper:
     path: dev_lib/card_swiper
+  google_generative_ai: ^0.4.3
 
 dev_dependencies:
   flutter_test:

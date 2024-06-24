@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+
 
 class ChatPage extends StatefulWidget {
   @override
@@ -8,7 +10,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _userMessageController = TextEditingController();
   List<Map<String, dynamic>> _chatMessages = [];
-
+  //final model = '';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,9 +127,22 @@ class _ChatPageState extends State<ChatPage> {
             ),
             child: IconButton(
               icon: Icon(Icons.send, color: Colors.white),
-              onPressed: () {
+              onPressed: () async {
                 if (_userMessageController.text.isNotEmpty) {
-                  sendMessage(_userMessageController.text);
+                  //sendMessage(_userMessageController.text);
+                  final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: "AIzaSyDcU8MCVojgGDseYjyRVGCT3D-BihZimJM");
+                  final content = [Content.text('tell me a financial advi')];
+                  setState(() {
+                    _chatMessages.insert(0, {
+                    'message': _userMessageController,
+                    'isUserMessage': true,
+                      });
+                  _userMessageController.clear();
+                 });
+                final response = await model.generateContent(content);
+                print(response.text);
+
+
                 }
               },
             ),
@@ -138,6 +153,8 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void sendMessage(String messageText) {
+    final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: "AIzaSyDcU8MCVojgGDseYjyRVGCT3D-BihZimJM");
+
     setState(() {
       _chatMessages.insert(0, {
         'message': messageText,
