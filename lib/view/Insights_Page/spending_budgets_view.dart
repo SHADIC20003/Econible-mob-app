@@ -3,6 +3,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trackizer/sqldb.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class SpendingBudgetsView extends StatefulWidget {
   @override
@@ -17,6 +19,7 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
   List<Map<String, dynamic>> budgetCategories = [];
   final SqlDb sqldb = SqlDb();
   String? email = '';
+  double? _predictedExpense;
 
   @override
   void initState() {
@@ -57,6 +60,43 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
     });
   }
 
+Future<void> _fetchPredictedExpense() async {
+  try {
+    double totalAmount = budgetCategories.fold(0, (sum, item) => sum + item['percentage']);
+    print('Total amount: $totalAmount'); // Print the total amount
+
+    final data = {'data': [totalAmount]}; // Ensure this matches what the server expects
+    final body = json.encode(data);
+    print('Request body: $body'); // Print the request body
+
+    final response = await http.post(
+      Uri.parse('https://pmdarima.onrender.com/predict'),
+      headers: {"Content-Type": "application/json"},
+      body: body,
+    );
+
+    print('Response status code: ${response.statusCode}'); // Print the response status code
+    print('Response body: ${response.body}'); // Print the response body
+
+    if (response.statusCode == 200) {
+      final decodedResponse = json.decode(response.body);
+      final predictions = decodedResponse['predictions']?.cast<double>();
+      if (predictions != null) {
+        setState(() {
+          _predictedExpense = predictions.isNotEmpty ? predictions[0] : null;
+        });
+        print('Predicted expense: $_predictedExpense'); // Print the predicted expense
+      } else {
+        throw Exception('Error: No predictions found in response');
+      }
+    } else {
+      throw Exception('Failed to get predictions: ${response.statusCode}');
+    }
+  } catch (error) {
+    print('Error: $error');
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,7 +113,24 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: _showPieChart ? _buildPieChartPage() : _buildCategoriesPage(),
+        child: Column(
+          children: [
+            if (_predictedExpense != null)
+              Text(
+                'Predicted Upcoming Monthly Expense: \EGP ${_predictedExpense!.toStringAsFixed(2)}',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _fetchPredictedExpense,
+              child: Text('Show Predicted Upcoming Monthly Expense'),
+            ),
+            SizedBox(height: 16),
+            Expanded(
+              child: _showPieChart ? _buildPieChartPage() : _buildCategoriesPage(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -232,6 +289,36 @@ class _SpendingBudgetsViewState extends State<SpendingBudgetsView> {
         ),
       ),
     );
+  }
+}
+
+Future<List<double>> getPredictions(double number) async {
+  final url = Uri.parse('https://pmdarima.onrender.com/predict');
+
+  final data = {'data': [number]}; // Ensure this matches what the server expects
+  final body = json.encode(data);
+
+  print('Sending request to $url with body: $body');
+
+  final response = await http.post(
+    url,
+    headers: {"Content-Type": "application/json"},
+    body: body,
+  );
+
+  print('Response status code: ${response.statusCode}');
+  print('Response body: ${response.body}');
+
+  if (response.statusCode == 200) {
+    final decodedResponse = json.decode(response.body);
+    final predictions = decodedResponse['predictions']?.cast<double>();
+    if (predictions != null) {
+      return predictions;
+    } else {
+      throw Exception('Error: No predictions found in response');
+    }
+  } else {
+    throw Exception('Failed to get predictions: ${response.statusCode}');
   }
 }
 
