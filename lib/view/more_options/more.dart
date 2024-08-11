@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:trackizer/view/more_options/charity.dart';
 import 'package:trackizer/view/more_options/education.dart'; // Import the FinanceEducationPage
+import 'package:trackizer/common/color_extension.dart';
+import 'package:trackizer/view/more_options/reminders.dart';
+import 'package:trackizer/view/more_options/setgoals.dart';
 
 class MoreOptionsPage extends StatelessWidget {
   const MoreOptionsPage({Key? key}) : super(key: key);
@@ -8,6 +11,7 @@ class MoreOptionsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+            backgroundColor: Color.fromARGB(80, 80, 80, 75),
       appBar: AppBar(
         title: Text('More Options'),
         backgroundColor: Colors.black,
@@ -38,15 +42,19 @@ class MoreOptionsPage extends StatelessWidget {
             title: 'Set-up bill payment reminders',
             icon: Icons.payment,
             onTap: () {
-              // Add navigation logic for setting up bill payment reminders
-            },
+Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RemindersPage()), // Navigate to the FinanceEducationPage
+              );            },
           ),
           _buildMoreOption(
             title: 'Set-up goals',
             icon: Icons.star,
             onTap: () {
-              // Add navigation logic for setting up goals
-            },
+Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SetGoalsPage()), 
+              );            },
           ),
         ],
       ),

@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trackizer/sqldb.dart';
 import '../../common/color_extension.dart';
 import '../../common_widget/icon_item_row.dart';
-import '../../view/login/sign_in_view.dart'; // Import SignInView
+import '../../view/login/sign_in_view.dart';
+import 'package:trackizer/view/settings/personal_information_page.dart';
+import 'package:trackizer/view/settings/help_support_page.dart';
+import 'package:trackizer/view/settings/about_app_page.dart';
+
+
 
 class SettingsView extends StatefulWidget {
   const SettingsView({Key? key}) : super(key: key);
@@ -12,6 +19,56 @@ class SettingsView extends StatefulWidget {
 
 class _SettingsViewState extends State<SettingsView> {
   bool isActive = false;
+  SqlDb sqldb = SqlDb();
+  String? email = '';
+  String dbEmail = '';
+  String dbUsername = '';
+
+  @override
+  void initState() {
+    super.initState();
+    getData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    getData();
+  }
+
+  void getData() async {
+    final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    email = sharedPreferences.getString('current_email');
+
+    if (email != null && email!.isNotEmpty) {
+      String escapedEmail = email!.replaceAll("'", "''");
+      List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM users WHERE email = '$escapedEmail' ");
+
+      if (data.isNotEmpty) {
+        setState(() {
+          dbEmail = data[0]['email'];
+          dbUsername = data[0]['userName'];
+        });
+      } else {
+        setState(() {
+          dbEmail = 'User not found';
+          dbUsername = 'Unknown';
+        });
+      }
+    } else {
+      setState(() {
+        dbEmail = 'No email found';
+        dbUsername = 'Unknown';
+      });
+    }
+  }
+
+  void navigateToPage(Widget page) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => page),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +124,7 @@ class _SettingsViewState extends State<SettingsView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Guest",
+                    dbUsername,
                     style: TextStyle(
                         color: TColor.white,
                         fontSize: 20,
@@ -82,7 +139,7 @@ class _SettingsViewState extends State<SettingsView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "guest@gmail.com",
+                    dbEmail,
                     style: TextStyle(
                         color: TColor.gray30,
                         fontSize: 12,
@@ -161,7 +218,7 @@ class _SettingsViewState extends State<SettingsView> {
                     Padding(
                       padding: const EdgeInsets.only(top: 20, bottom: 8),
                       child: Text(
-                        "My subscription",
+                        "Account Settings",
                         style: TextStyle(
                             color: TColor.white,
                             fontSize: 14,
@@ -177,61 +234,33 @@ class _SettingsViewState extends State<SettingsView> {
                         color: TColor.gray60.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Column(
+                      child: Column(
                         children: [
-                          IconItemRow(
-                            title: "Sorting",
-                            icon: "assets/img/sorting.png",
-                            value: "Date",
+                          ListTile(
+                            title: const Text("Personal Information"),
+                            leading: const Icon(Icons.person, color: Colors.white),
+                            onTap: () {
+                              navigateToPage(const PersonalInformationPage());
+                            },
                           ),
-                          IconItemRow(
-                            title: "Summary",
-                            icon: "assets/img/chart.png",
-                            value: "Average",
+                          ListTile(
+                            title: const Text("About App"),
+                            leading: const Icon(Icons.info, color: Colors.white),
+                            onTap: () {
+                              navigateToPage(const AboutAppPage());
+                            },
                           ),
-                          IconItemRow(
-                            title: "Default currency",
-                            icon: "assets/img/money.png",
-                            value: "USD (\$)",
+                          ListTile(
+                            title: const Text("Help and Support"),
+                            leading: const Icon(Icons.help, color: Colors.white),
+                            onTap: () {
+                              navigateToPage(const HelpSupportPage());
+                            },
                           ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20, bottom: 8),
-                      child: Text(
-                        "Appearance",
-                        style: TextStyle(
-                            color: TColor.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: TColor.border.withOpacity(0.1),
-                        ),
-                        color: TColor.gray60.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Column(
-                        children: [
-                          IconItemRow(
-                            title: "App icon",
-                            icon: "assets/img/app_icon.png",
-                            value: "Default",
-                          ),
-                          IconItemRow(
-                            title: "Theme",
-                            icon: "assets/img/light_theme.png",
-                            value: "Dark",
-                          ),
-                          IconItemRow(
-                            title: "Font",
-                            icon: "assets/img/font.png",
-                            value: "Inter",
+                          ListTile(
+                            title: const Text("Version"),
+                            leading: const Icon(Icons.verified, color: Colors.white),
+                            trailing: const Text("1.0.0", style: TextStyle(color: Colors.white)),
                           ),
                         ],
                       ),
@@ -258,7 +287,9 @@ class _SettingsViewState extends State<SettingsView> {
                       child: Column(
                         children: [
                           OutlinedButton(
-                            onPressed: () {
+                            onPressed: () async {
+                              final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+                              sharedPreferences.remove('current_email');
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(

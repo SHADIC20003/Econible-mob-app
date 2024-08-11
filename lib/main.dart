@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:trackizer/common/color_extension.dart';
+import 'package:trackizer/view/login/Splashscreen.dart';
 import 'package:trackizer/view/main_tab/main_tab_view.dart';
+import 'package:trackizer/view/login/sign_in_view.dart';
 
 void main() {
   runApp(const MyApp());
@@ -26,7 +28,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: false,
       ),
-      home: const MainTabView(),
+      home: SplashScreen(),
     );
   }
 }

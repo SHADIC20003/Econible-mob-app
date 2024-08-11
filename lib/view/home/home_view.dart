@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trackizer/common/color_extension.dart';
+import 'package:trackizer/sqldb.dart';
+import 'package:trackizer/view/Expenses/add_budget.dart';
 import '../../common_widget/custom_arc_painter.dart';
 import '../../common_widget/segment_button.dart';
 import '../../common_widget/status_button.dart';
@@ -7,7 +10,6 @@ import '../../common_widget/subscription_home_row.dart';
 import '../../common_widget/upcoming_bill_row.dart';
 import '../settings/settings_view.dart';
 import '../expense_info/expense_info_view.dart';
-import '../login/sign_in_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -18,36 +20,150 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   bool isSubscription = true;
-  List subArr = [
-    {"name": "Renting Expenses", "icon": "assets/img/rent.png", "price": "3,000"},
-    {
-      "name": "Food",
-      "icon": "assets/img/food.png",
-      "price": "1,500"
-    },
-    {
-      "name": "Water",
-      "icon": "assets/img/water.png",
-      "price": "200"
-    },
-    {"name": "Electricity", "icon": "assets/img/electricity.png", "price": "300"}
-    
-  ];
+  List<dynamic> subArr = [];
+  
+  final SqlDb sqldb = SqlDb();
+  String? email = '';
+  
+  String dbbudget = '';
+  String remainingBudget = '';
+  String num_of_expenses = '';
+  String highest_expense = '';
+  String lowest_expense = '';
+  double budgetPercentage = 0;
 
-  List bilArr = [
-    {"name": "Renting Expenses", "date": DateTime(2023, 07, 25), "price": "3,000"},
-    {
-      "name": "Food",
-      "date": DateTime(2023, 07, 25),
-      "price": "1,500"
-    },
-    {
-      "name": "Water",
-      "date": DateTime(2023, 07, 25),
-      "price": "200"
-    },
-    {"name": "Electricity", "date": DateTime(2023, 07, 25), "price": "15.00"}
-  ];
+  @override
+  void initState() {
+    super.initState();
+    getData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    getData();
+  }
+
+  void getData() async {
+    final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    email = sharedPreferences.getString('current_email');
+
+    if (email != null && email!.isNotEmpty) {
+      String escapedEmail = email!.replaceAll("'", "''");
+
+      List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM users WHERE email = '$email'");
+
+      if (data.isNotEmpty) {
+        setState(() {
+          dbbudget = data[0]['budget'].toString();
+        });
+      } else {
+        setState(() {
+          dbbudget = 'User not found';
+        });
+      }
+
+      List<Map<String, dynamic>> expenses = await sqldb.readData("SELECT COUNT(*) AS 'expense_count' FROM Expense WHERE userEmail = '$email'");
+      if (expenses.isNotEmpty) {
+        setState(() {
+          num_of_expenses = expenses[0]['expense_count'].toString();
+        });
+      } else {
+        setState(() {
+          num_of_expenses = 'User not found';
+        });
+      }
+      
+      List<Map<String, dynamic>> Hprice = await sqldb.readData("SELECT MAX(amount) AS 'highest' FROM Expense WHERE userEmail = '$email'");
+      if (Hprice.isNotEmpty) {
+        setState(() {
+          highest_expense = Hprice[0]['highest'].toString();
+          if (highest_expense == 'null') {
+            highest_expense = '0';
+          }
+        });
+      } else {
+        setState(() {
+          num_of_expenses = 'User not found';
+        });
+      }
+
+      List<Map<String, dynamic>> Lprice = await sqldb.readData("SELECT MIN(amount) AS 'lowest' FROM Expense WHERE userEmail = '$email'");
+      if (Lprice.isNotEmpty) {
+        setState(() {
+          lowest_expense = Lprice[0]['lowest'].toString();
+          if (lowest_expense == 'null') {
+            lowest_expense = '0';
+          }
+        });
+      } else {
+        setState(() {
+          num_of_expenses = 'User not found';
+        });
+      }
+
+      List<dynamic> bigData = await sqldb.readData("SELECT * FROM Expense WHERE userEmail = '$email'");
+      double totalExpenses = 0;
+      setState(() {
+        subArr.clear();
+        for (var element in bigData) {
+          totalExpenses += element["amount"];
+          String icon;
+          switch (element["category"]) {
+            case "Food":
+              icon = "assets/img/food.png";
+              break;
+            case "Mortgage or Rent":
+              icon = "assets/img/rent.png";
+              break;
+            case "Transportation":
+              icon = "assets/img/transport.png";
+              break;
+            case "Utilities":
+              icon = "assets/img/electricity.png";
+              break;
+            case "Subscriptions":
+              icon = "assets/img/subs.png";
+              break;
+            case "Personal Expenses":
+              icon = "assets/img/clothes.png";
+              break;
+            case "Savings & Investments":
+              icon = "assets/img/savings.png";
+              break;
+            case "Debts or Loans":
+              icon = "assets/img/loans1.png";
+              break;
+            case "Health care":
+              icon = "assets/img/insurance.png";
+              break;
+            case "Miscellaneous expenses":
+              icon = "assets/img/more.png";
+              break;
+            default:
+              icon = "assets/img/more.png";
+          }
+          String Id = element["ExpenseID"].toString();
+          subArr.add({
+            "ID": Id,
+            "name": element["category"],
+            "priority": element["priority"],
+            "date": element["date"],
+            "description": element["description"],
+            "createdAt": element["createdAt"],
+            "icon": icon,
+            "price": element["amount"]
+          });
+        }
+        remainingBudget = (double.parse(dbbudget) - totalExpenses).toString();
+        budgetPercentage = totalExpenses > 0 ? (double.parse(dbbudget) - totalExpenses) / double.parse(dbbudget) * 270 : 270;
+      });
+    } else {
+      setState(() {
+        dbbudget = 'No email found';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,10 +176,10 @@ class _HomeViewState extends State<HomeView> {
             Container(
               height: media.width * 1.1,
               decoration: BoxDecoration(
-                  color: TColor.gray70.withOpacity(0.5),
-                  borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(25),
-                      bottomRight: Radius.circular(25))),
+                color: TColor.gray70.withOpacity(0.5),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(25),
+                  bottomRight: Radius.circular(25))),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -72,31 +188,30 @@ class _HomeViewState extends State<HomeView> {
                     alignment: Alignment.topCenter,
                     children: [
                       Container(
-                        padding:  EdgeInsets.only(bottom: media.width * 0.05),
+                        padding: EdgeInsets.only(bottom: media.width * 0.05),
                         width: media.width * 0.72,
                         height: media.width * 0.72,
                         child: CustomPaint(
-                          painter: CustomArcPainter(end: 220, ),
+                          painter: CustomArcPainter(end: budgetPercentage),
                         ),
                       ),
-
                       Padding(
                         padding: const EdgeInsets.only(right: 10),
                         child: Row(
                           children: [
                             const Spacer(),
                             IconButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const SettingsView()));
-                                },
-                                icon: Image.asset("assets/img/settings.png",
-                                    width: 25,
-                                    height: 25,
-                                    color: TColor.gray30))
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const SettingsView()));
+                              },
+                              icon: Image.asset("assets/img/settings.png",
+                                width: 25,
+                                height: 25,
+                                color: TColor.gray30)
+                            )
                           ],
                         ),
                       ),
@@ -109,50 +224,55 @@ class _HomeViewState extends State<HomeView> {
                         height: media.width * 0.05,
                       ),
                       Image.asset("assets/img/eco3.png",
-                          width: media.width * 0.25, fit: BoxFit.contain),
-                       SizedBox(
+                        width: media.width * 0.25,
+                        fit: BoxFit.contain),
+                      SizedBox(
                         height: media.width * 0.07,
                       ),
                       Text(
-                        "\E£10,000",
+                        remainingBudget,
                         style: TextStyle(
-                            color: TColor.white,
-                            fontSize: 40,
-                            fontWeight: FontWeight.w700),
+                          color: TColor.white,
+                          fontSize: 40,
+                          fontWeight: FontWeight.w700),
                       ),
                       SizedBox(
                         height: media.width * 0.055,
                       ),
                       Text(
-                        "This month bills",
+                        "Remaining budget",
                         style: TextStyle(
-                            color: TColor.gray40,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600),
+                          color: TColor.gray40,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600),
                       ),
                       SizedBox(
                         height: media.width * 0.07,
                       ),
                       InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AddBudgetPage()));
+                        },
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: TColor.border.withOpacity(0.15),
+                              color: TColor.border.withOpacity(0.15)
                             ),
                             color: TColor.gray60.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(16)
                           ),
                           child: Text(
-                            "See your budget",
+                            "Enter a new budget",
                             style: TextStyle(
-                                color: TColor.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600),
+                              color: TColor.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600),
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                   Padding(
@@ -165,7 +285,7 @@ class _HomeViewState extends State<HomeView> {
                             Expanded(
                               child: StatusButton(
                                 title: "Current Expenses",
-                                value: "12",
+                                value: num_of_expenses,
                                 statusColor: TColor.secondary,
                                 onPressed: () {},
                               ),
@@ -176,7 +296,7 @@ class _HomeViewState extends State<HomeView> {
                             Expanded(
                               child: StatusButton(
                                 title: "Highest Expense",
-                                value: "\E£3,000",
+                                value: "E£$highest_expense",
                                 statusColor: TColor.primary10,
                                 onPressed: () {},
                               ),
@@ -187,16 +307,16 @@ class _HomeViewState extends State<HomeView> {
                             Expanded(
                               child: StatusButton(
                                 title: "Lowest Expense",
-                                value: "\E£50",
+                                value: "E£$lowest_expense",
                                 statusColor: TColor.secondaryG,
                                 onPressed: () {},
                               ),
-                            )
+                            ),
                           ],
                         ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -205,7 +325,8 @@ class _HomeViewState extends State<HomeView> {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               height: 50,
               decoration: BoxDecoration(
-                  color: Colors.black, borderRadius: BorderRadius.circular(15)),
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(15)),
               child: Row(
                 children: [
                   Expanded(
@@ -229,43 +350,40 @@ class _HomeViewState extends State<HomeView> {
                         });
                       },
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
             if (isSubscription)
               ListView.builder(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: subArr.length,
-                  itemBuilder: (context, index) {
-                    var sObj = subArr[index] as Map? ?? {};
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: subArr.length,
+                itemBuilder: (context, index) {
+                  var sObj = subArr[index] as Map? ?? {};
 
-                    return SubScriptionHomeRow(
-                      sObj: sObj,
-                      onPressed: () {
-
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => SubscriptionInfoView( sObj: sObj ) ));
-                      },
-                    );
-                  }),
+                  return SubScriptionHomeRow(
+                    sObj: sObj,
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => SubscriptionInfoView(sObj: sObj)));
+                    },
+                  );
+                }),
             if (!isSubscription)
               ListView.builder(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: subArr.length,
-                  itemBuilder: (context, index) {
-                    var sObj = subArr[index] as Map? ?? {};
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: subArr.length,
+                itemBuilder: (context, index) {
+                  var sObj = subArr[index] as Map? ?? {};
 
-                    return UpcomingBillRow(
-                      sObj: sObj,
-                      onPressed: () {},
-                    );
-                  }),
+                  return UpcomingBillRow(
+                    sObj: sObj,
+                    onPressed: () {},
+                  );
+                }),
             const SizedBox(
               height: 110,
             ),

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:trackizer/common/color_extension.dart';
 import 'package:trackizer/common_widget/image_button.dart';
 import 'package:trackizer/common_widget/primary_button.dart';
-import 'package:trackizer/common_widget/round_textfield.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:trackizer/sqldb.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:trackizer/common/color_extension.dart';
+import 'package:trackizer/common_widget/round_textfield.dart';
+import 'package:trackizer/view/main_tab/main_tab_view.dart';
 
 class AddSubScriptionView extends StatefulWidget {
   const AddSubScriptionView({Key? key}) : super(key: key);
@@ -19,30 +22,26 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
   TextEditingController dateController = TextEditingController();
 
   List subArr = [
-    {"name": "Renting Expenses", "icon": "assets/img/rent.png"},
-    {"name": "Loans", "icon": "assets/img/loans1.png"},
-    {"name": "Electricity", "icon": "assets/img/electricity.png"},
-    {"name": "Water", "icon": "assets/img/water.png"},
-    {"name": "Gas", "icon": "assets/img/gas.png"},
-    {"name": "Insurance", "icon": "assets/img/insurance.png"},
-    {"name": "Internet Access", "icon": "assets/img/wifi.png"},
+    {"name": "Mortgage or Rent", "icon": "assets/img/rent.png"},
     {"name": "Food", "icon": "assets/img/food.png"},
-    {"name": "Vehicle", "icon": "assets/img/car.png"},
     {"name": "Transportation", "icon": "assets/img/transport.png"},
-    {"name": "Medical", "icon": "assets/img/medical.png"},
-    {"name": "Education", "icon": "assets/img/education.png"},
-    {"name": "Entertainment", "icon": "assets/img/entertainment1.png"},
-    {"name": "Clothes", "icon": "assets/img/clothes.png"},
-    {"name": "Savings", "icon": "assets/img/savings.png"},
-    {"name": "Software Subscriptions", "icon": "assets/img/subs.png"},
-    {"name": "Travels & Trips", "icon": "assets/img/trip.png"},
-    {"name": "Others", "icon": "assets/img/more.png"},
+    {"name": "Utilities", "icon": "assets/img/electricity.png"},
+    {"name": "Subscriptions", "icon": "assets/img/subs.png"},
+    {"name": "Personal Expenses", "icon": "assets/img/clothes.png"},
+    {"name": "Savings & Investments", "icon": "assets/img/savings.png"},
+    {"name": "Debts or Loans", "icon": "assets/img/loans1.png"},
+    {"name": "Health care", "icon": "assets/img/insurance.png"},
+    {"name": "Miscellaneous expenses", "icon": "assets/img/more.png"},
   ];
 
   double amountVal = 5;
-
   DateTime selectedDate = DateTime.now();
+  int selectedCategoryIndex = 0;
+  int _priority = 1; // Default priority is 1
 
+final SqlDb sqldb = SqlDb();
+  String? email = '';
+  
   @override
   Widget build(BuildContext context) {
     var media = MediaQuery.of(context).size;
@@ -82,18 +81,6 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
                             )
                           ],
                         ),
-                        // Row(
-                        //   mainAxisAlignment: MainAxisAlignment.center,
-                        //   children: [
-                        //     Text(
-                        //       "New",
-                        //       style: TextStyle(
-                        //         color: TColor.gray30,
-                        //         fontSize: 16,
-                        //       ),
-                        //     )
-                        //   ],
-                        // ),
                       ],
                     ),
                     Padding(
@@ -119,19 +106,28 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
                           enableInfiniteScroll: true,
                           viewportFraction: 0.65,
                           enlargeFactor: 0.4,
-                          enlargeStrategy:
-                              CenterPageEnlargeStrategy.zoom,
+                          enlargeStrategy: CenterPageEnlargeStrategy.zoom,
+                          onPageChanged: (index, reason) {
+                            setState(() {
+                              selectedCategoryIndex = index;
+                            });
+                          },
                         ),
                         itemCount: subArr.length,
-                        itemBuilder: (BuildContext context,
-                            int itemIndex, int pageViewIndex) {
+                        itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
                           var sObj = subArr[itemIndex] as Map? ?? {};
 
                           return Container(
                             margin: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: itemIndex == selectedCategoryIndex ? Colors.blue : Colors.transparent,
+                                width: 2,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                             child: Column(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Image.asset(
                                   sObj["icon"],
@@ -158,69 +154,89 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
                 ),
               ),
             ),
+            // Description TextField
             Padding(
               padding: const EdgeInsets.only(
-                top: 30,
-                left: 20,
-                right: 20,
+                top: 35,
+                left: 30,
+                right: 30,
               ),
-              child: RoundTextField(
-                title: "Description",
-                titleAlign: TextAlign.center,
+              child: TextFormField(
                 controller: txtDescription,
+                textAlign: TextAlign.left,
+                style: TextStyle(color: Colors.white), // Set the text color
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: TColor.gray70.withOpacity(0.8), // Match background color
+                  hintText: 'Description',
+                  hintStyle: TextStyle(color: Colors.white),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
               ),
             ),
             // Date Picker
-           Padding(
-  padding: const EdgeInsets.symmetric(
-    horizontal: 20,
-  ),
-  child: Theme(
-    // Wrap the TextFormField with a Theme widget
-    data: ThemeData(
-      // Customize the text theme to set the color of the selected date text
-      textTheme: TextTheme(
-        subtitle1: TextStyle(color: Colors.white), // Customize the color
-      ),
-    ),
-    child: TextFormField(
-      controller: dateController,
-      textAlignVertical: TextAlignVertical.center,
-      readOnly: true,
-      onTap: () async {
-        final DateTime? pickedDate = await showDatePicker(
-          context: context,
-          initialDate: selectedDate,
-          firstDate: DateTime(2015, 8),
-          lastDate: DateTime(2101),
-        );
-        if (pickedDate != null && pickedDate != selectedDate) {
-          setState(() {
-            selectedDate = pickedDate;
-            dateController.text =
-                DateFormat('dd/MM/yyyy').format(selectedDate);
-          });
-        }
-      },
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: TColor.gray.withOpacity(0),
-        prefixIcon: const Icon(
-          Icons.calendar_today,
-          size: 16,
-          color: Colors.white,
-        ),
-        hintText: 'Date',
-        hintStyle: TextStyle(color: Colors.white),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-      ),
-    ),
-  ),
-),
-
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 30,
+                vertical: 15,
+              ),
+              child: Theme(
+                // Wrap the TextFormField with a Theme widget
+                data: ThemeData(
+                  // Customize the text theme to set the color of the selected date text
+                ),
+                child: TextFormField(
+                  controller: dateController,
+                  textAlignVertical: TextAlignVertical.center,
+                  readOnly: true,
+                  onTap: () async {
+                    final DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate,
+                      firstDate: DateTime(2015, 8),
+                      lastDate: DateTime(2101),
+                    );
+                    if (pickedDate != null && pickedDate != selectedDate) {
+                      setState(() {
+                        selectedDate = pickedDate;
+                        dateController.text = DateFormat('dd/MM/yyyy').format(selectedDate);
+                      });
+                    }
+                  },
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: TColor.gray70.withOpacity(0.8), // Match background color
+                    prefixIcon: const Icon(
+                      Icons.calendar_today,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                    hintText: 'Date',
+                    hintStyle: TextStyle(color: Colors.white),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Priority Button
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 10,
+                horizontal: 20,
+              ),
+              child: PriorityButton(
+                title: "Priority: ${_getPriorityText(_priority)}",
+                onPressed: () {
+                  _showPriorityDialog(context);
+                },
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(
                 vertical: 0,
@@ -239,17 +255,24 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
                     vertical: 10,
                     horizontal: 20,
                   ),
+                  child: Text(
+                    "Amount: E£${amountVal.toStringAsFixed(2)}",
+                    style: TextStyle(
+                      color: TColor.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(
-                vertical: 20,
-                horizontal: 20,
+                vertical: 15,
+                horizontal: 25,
               ),
               child: Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ImageButton(
                     image: "assets/img/minus.png",
@@ -293,7 +316,7 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
                   ImageButton(
                     image: "assets/img/plus.png",
                     onPressed: () {
-                      amountVal +=5;
+                      amountVal += 5;
 
                       setState(() {});
                     },
@@ -302,59 +325,16 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
+              padding: const EdgeInsets.only(
+                top: 20,
+                left: 20,
+                right: 20,
+                bottom: 30,
               ),
               child: PrimaryButton(
                 title: "Add Expense",
-                onPressed: () {},
+                onPressed: _saveExpense,
               ),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () {},
-                child: DottedBorder(
-                  dashPattern: const [5, 4],
-                  strokeWidth: 1,
-                  borderType: BorderType.RRect,
-                  radius: const Radius.circular(16),
-                  color: TColor.border.withOpacity(0.1),
-                  child: Container(
-                    height: 64,
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    alignment: Alignment.center,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Add new category ",
-                          style: TextStyle(
-                              color: TColor.gray30,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600),
-                        ),
-                        Image.asset(
-                          "assets/img/add.png",
-                          width: 12,
-                          height: 12,
-                          color: TColor.gray30,
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-             const SizedBox(
-              height: 40,
             ),
           ],
         ),
@@ -366,56 +346,135 @@ class _AddSubScriptionViewState extends State<AddSubScriptionView> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        TextEditingController amountController = TextEditingController();
-        amountController.text = amountVal.toStringAsFixed(2);
+        double tempAmount = amountVal;
 
         return AlertDialog(
-          backgroundColor: TColor.gray.withOpacity(0.8),
-          title: Text(
-            'Enter New Amount',
-            style: TextStyle(color: Colors.white),
-          ),
-          content: TextFormField(
-            controller: amountController,
-            keyboardType: TextInputType.numberWithOptions(decimal: true),
-            style: TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: 'Amount',
-              hintStyle: TextStyle(color: Colors.white),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              filled: true,
-              fillColor: TColor.gray.withOpacity(0.8),
-            ),
+          title: Text('Enter Amount'),
+          content: TextField(
+            keyboardType: TextInputType.number,
+            onChanged: (value) {
+              tempAmount = double.tryParse(value) ?? tempAmount;
+            },
           ),
           actions: <Widget>[
             TextButton(
+              child: Text('CANCEL'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white),
-              ),
             ),
             TextButton(
+              child: Text('OK'),
               onPressed: () {
-                double newAmount = double.tryParse(amountController.text) ?? 0.0;
                 setState(() {
-                  amountVal = newAmount;
+                  amountVal = tempAmount;
                 });
                 Navigator.of(context).pop();
               },
-              child: Text(
-                'Ok',
-                style: TextStyle(color: Colors.white),
-              ),
             ),
           ],
         );
       },
+    );
+  }
+
+  void _showPriorityDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Select Priority'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: List<Widget>.generate(3, (int index) {
+              return RadioListTile<int>(
+                title: Text(_getPriorityText(index + 1)),
+                value: index + 1,
+                groupValue: _priority,
+                onChanged: (int? value) {
+                  setState(() {
+                    _priority = value!;
+                  });
+                  Navigator.of(context).pop();
+                },
+              );
+            }),
+          ),
+        );
+      },
+    );
+  }
+
+  String _getPriorityText(int priority) {
+    switch (priority) {
+      case 1:
+        return 'Low';
+      case 2:
+        return 'Medium';
+      case 3:
+        return 'High';
+      default:
+        return 'Low';
+    }
+  }
+
+  Future<void> _saveExpense() async {
+   // sqldb.mydeleteDatabase();
+    var subObj = subArr[selectedCategoryIndex] as Map? ?? {};
+
+    /*print("Category Name: ${subObj["name"]}");
+    print("Description: ${txtDescription.text}");
+    print("Amount: E£${amountVal.toStringAsFixed(2)}");
+    print("Priority: ${_getPriorityText(_priority)}");
+    print("Date: ${dateController.text}");*/
+
+    final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    email = sharedPreferences.getString('current_email');
+
+     if (email != null && email!.isNotEmpty) {
+       //List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM Expense WHERE userEmail = '$email' ");
+        //print('$data');
+          int response = await sqldb.insertData(
+                        "INSERT INTO 'Expense' ('userEmail','category','description','amount','priority','date') VALUES ('$email','${subObj["name"]}','${txtDescription.text}',${amountVal.toStringAsFixed(2)},'${_getPriorityText(_priority)}','${dateController.text}')",
+                      );
+         //print('$response');     
+          List<Map<String, dynamic>> data = await sqldb.readData("SELECT * FROM Expense where userEmail='$email'");
+          //print("$data");
+          Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MainTabView(),
+                          ),
+                        );
+     }
+    // Add your save logic here
+  }
+}
+
+class PriorityButton extends StatelessWidget {
+  final String title;
+  final VoidCallback onPressed;
+
+  PriorityButton({required this.title, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        // iconColor: TColor.gray70.withOpacity(0.8), // Match background color
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: TColor.white,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 }
